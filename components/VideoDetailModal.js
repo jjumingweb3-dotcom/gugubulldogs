@@ -68,34 +68,43 @@ export default function VideoDetailModal({ video, onClose }) {
             </h2>
           </div>
 
-          {/* Match Result Scoreboard */}
+          {/* Match Result Scoreboard (Baseball Visitor vs Home concept) */}
           {video.home_score !== undefined && video.home_score !== null && video.away_score !== undefined && video.away_score !== null && (
             <div className="bg-primary/10 border border-primary/20 rounded-2xl p-4 flex items-center justify-around text-center">
+              {/* Away (Visitor, Left) */}
               <div className="space-y-1 w-1/3">
-                <div className="text-[10px] text-gray-500 font-bold">홈팀</div>
-                <div className="text-sm font-extrabold text-primary truncate" title={video.home_team || '구구불독스'}>
-                  {video.home_team || (video.team_division && video.team_division !== '미분류' ? `구구불독스 ${video.team_division}` : '구구불독스')}
+                <div className="text-[10px] text-gray-500 font-bold">원정팀 (초)</div>
+                <div className="text-sm font-semibold text-gray-300 truncate" title={video.away_team || video.opponent || '상대팀'}>
+                  {video.away_team || video.opponent || '상대팀'}
                 </div>
               </div>
               
+              {/* SCORE (Center) */}
               <div className="flex flex-col items-center w-1/3 shrink-0">
                 <div className="text-[9px] text-gray-500 uppercase tracking-widest font-bold">SCORE</div>
                 <div className="text-2xl font-black text-white tracking-wider font-mono">
-                  {video.home_score} : {video.away_score}
+                  {video.away_score} : {video.home_score}
                 </div>
-                {Number(video.home_score) === Number(video.away_score) ? (
-                  <span className="text-[9px] bg-white/10 text-gray-300 px-1.5 py-0.5 rounded font-extrabold mt-1">무승부</span>
-                ) : (
+                {video.win_team ? (
                   <span className="text-[9px] bg-primary/25 text-primary px-1.5 py-0.5 rounded font-extrabold mt-1">
-                    {Number(video.home_score) > Number(video.away_score) ? '홈팀 승' : '원정팀 승'}
+                    {video.win_team === '무승부' || video.win_team.includes('무승부') ? video.win_team : `${video.win_team} 승`}
                   </span>
+                ) : (
+                  Number(video.home_score) === Number(video.away_score) ? (
+                    <span className="text-[9px] bg-white/10 text-gray-300 px-1.5 py-0.5 rounded font-extrabold mt-1">무승부</span>
+                  ) : (
+                    <span className="text-[9px] bg-primary/25 text-primary px-1.5 py-0.5 rounded font-extrabold mt-1">
+                      {Number(video.home_score) > Number(video.away_score) ? '홈팀 승' : '원정팀 승'}
+                    </span>
+                  )
                 )}
               </div>
 
+              {/* Home (Right) */}
               <div className="space-y-1 w-1/3">
-                <div className="text-[10px] text-gray-500 font-bold">원정팀</div>
-                <div className="text-sm font-semibold text-gray-300 truncate" title={video.away_team || video.opponent || '상대팀'}>
-                  {video.away_team || video.opponent || '상대팀'}
+                <div className="text-[10px] text-gray-500 font-bold">홈팀 (말)</div>
+                <div className="text-sm font-extrabold text-primary truncate" title={video.home_team || '구구불독스'}>
+                  {video.home_team || (video.team_division && video.team_division !== '미분류' ? `구구불독스 ${video.team_division}` : '구구불독스')}
                 </div>
               </div>
             </div>

@@ -70,23 +70,26 @@ export default function VideoCard({ video, onClick }) {
           </h3>
 
           {/* Score Info */}
-          {video.home_score !== undefined && video.home_score !== null && video.away_score !== undefined && video.away_score !== null ? (
+          {(video.win_team || (video.home_score !== undefined && video.home_score !== null && video.away_score !== undefined && video.away_score !== null)) ? (
             <div className="flex items-center gap-1.5 mt-2 bg-primary/10 border border-primary/20 rounded-xl px-2.5 py-1 w-fit">
-              <span className="text-[11px] font-bold text-primary flex items-center gap-1">
-                {Number(video.home_score) === Number(video.away_score) ? (
-                  <>
-                    🤝 무승부
-                    <span className="text-white bg-black/40 px-1.5 py-0.5 rounded text-[10px] ml-1 font-extrabold font-mono">
-                      {video.home_score} : {video.away_score}
-                    </span>
-                  </>
+              <span className="text-[11px] font-bold text-primary flex items-center gap-1 font-sans">
+                {video.win_team ? (
+                  video.win_team === '무승부' || video.win_team.includes('무승부') ? (
+                    <>🤝 {video.win_team}</>
+                  ) : (
+                    <>🏆 {video.win_team.includes('승') ? video.win_team : `${video.win_team} 승`}</>
+                  )
                 ) : (
-                  <>
-                    🏆 {Number(video.home_score) > Number(video.away_score) ? `${video.home_team || '홈팀'} 승` : `${video.away_team || '상대팀'} 승`}
-                    <span className="text-white bg-black/40 px-1.5 py-0.5 rounded text-[10px] ml-1 font-extrabold font-mono">
-                      {video.home_score} : {video.away_score}
-                    </span>
-                  </>
+                  Number(video.home_score) === Number(video.away_score) ? (
+                    <>🤝 무승부</>
+                  ) : (
+                    <>🏆 {Number(video.home_score) > Number(video.away_score) ? `${video.home_team || '홈팀'} 승` : `${video.away_team || '원정팀'} 승`}</>
+                  )
+                )}
+                {video.home_score !== undefined && video.home_score !== null && video.away_score !== undefined && video.away_score !== null && (
+                  <span className="text-white bg-black/45 px-1.5 py-0.5 rounded text-[10px] ml-1 font-extrabold font-mono">
+                    {video.away_score} : {video.home_score}
+                  </span>
                 )}
               </span>
             </div>

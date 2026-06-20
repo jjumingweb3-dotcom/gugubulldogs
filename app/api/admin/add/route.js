@@ -47,7 +47,8 @@ export async function POST(request) {
       home_team,
       away_team,
       home_score,
-      away_score
+      away_score,
+      win_team
     } = payload;
 
     const adminPassword = process.env.ADMIN_PASSWORD || '1234';
@@ -96,6 +97,7 @@ export async function POST(request) {
       away_team: away_team?.trim() || '',
       home_score: home_score !== '' && home_score !== null && home_score !== undefined ? Number(home_score) : null,
       away_score: away_score !== '' && away_score !== null && away_score !== undefined ? Number(away_score) : null,
+      win_team: win_team?.trim() || '',
       parsed_status: team_division === '미분류' ? 'pending' : 'success'
     };
 
