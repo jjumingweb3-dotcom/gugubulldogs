@@ -1,18 +1,9 @@
 import React from 'react';
 import { X, Calendar, Trophy, Users, ExternalLink, Play } from 'lucide-react';
+import { getDisplayTitle, formatDateFull } from '@/lib/utils';
 
 export default function VideoDetailModal({ video, onClose }) {
   if (!video) return null;
-
-  // Format published_at date to YYYY년 MM월 DD일
-  const formatDateFull = (dateString) => {
-    try {
-      const date = new Date(dateString);
-      return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
-    } catch (e) {
-      return dateString;
-    }
-  };
 
   const getDivisionBadgeColor = (division) => {
     switch (division) {
@@ -73,34 +64,38 @@ export default function VideoDetailModal({ video, onClose }) {
               {video.team_division}
             </span>
             <h2 className="text-lg md:text-xl font-extrabold text-white leading-snug">
-              {video.title}
+              {getDisplayTitle(video)}
             </h2>
           </div>
 
           {/* Match Result Scoreboard */}
-          {video.score_win !== undefined && video.score_win !== null && video.score_lose !== null && (
+          {video.home_score !== undefined && video.home_score !== null && video.away_score !== undefined && video.away_score !== null && (
             <div className="bg-primary/10 border border-primary/20 rounded-2xl p-4 flex items-center justify-around text-center">
               <div className="space-y-1 w-1/3">
-                <div className="text-[10px] text-gray-500 font-bold">승리 팀</div>
-                <div className="text-sm font-extrabold text-primary truncate" title={video.win_team}>
-                  {video.win_team || '구구불독스'}
+                <div className="text-[10px] text-gray-500 font-bold">홈팀</div>
+                <div className="text-sm font-extrabold text-primary truncate" title={video.home_team || '구구불독스'}>
+                  {video.home_team || (video.team_division && video.team_division !== '미분류' ? `구구불독스 ${video.team_division}` : '구구불독스')}
                 </div>
               </div>
               
               <div className="flex flex-col items-center w-1/3 shrink-0">
                 <div className="text-[9px] text-gray-500 uppercase tracking-widest font-bold">SCORE</div>
                 <div className="text-2xl font-black text-white tracking-wider font-mono">
-                  {video.score_win} : {video.score_lose}
+                  {video.home_score} : {video.away_score}
                 </div>
-                {Number(video.score_win) === Number(video.score_lose) && (
+                {Number(video.home_score) === Number(video.away_score) ? (
                   <span className="text-[9px] bg-white/10 text-gray-300 px-1.5 py-0.5 rounded font-extrabold mt-1">무승부</span>
+                ) : (
+                  <span className="text-[9px] bg-primary/25 text-primary px-1.5 py-0.5 rounded font-extrabold mt-1">
+                    {Number(video.home_score) > Number(video.away_score) ? '홈팀 승' : '원정팀 승'}
+                  </span>
                 )}
               </div>
 
               <div className="space-y-1 w-1/3">
-                <div className="text-[10px] text-gray-500 font-bold">패배 팀</div>
-                <div className="text-sm font-semibold text-gray-400 truncate" title={video.lose_team}>
-                  {video.lose_team || '상대팀'}
+                <div className="text-[10px] text-gray-500 font-bold">원정팀</div>
+                <div className="text-sm font-semibold text-gray-300 truncate" title={video.away_team || video.opponent || '상대팀'}>
+                  {video.away_team || video.opponent || '상대팀'}
                 </div>
               </div>
             </div>

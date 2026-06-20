@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Home, LogOut, ShieldAlert, CheckCircle, AlertTriangle, Save, Loader2, Plus, X } from 'lucide-react';
+import { Home, LogOut, ShieldAlert, CheckCircle, AlertTriangle, Save, Loader2, Plus, X, RefreshCw } from 'lucide-react';
 
 export default function AdminPage() {
   const [password, setPassword] = useState('');
@@ -13,6 +13,7 @@ export default function AdminPage() {
   const [filterType, setFilterType] = useState('pending'); // 'all' | 'pending'
   const [savingId, setSavingId] = useState(null);
   const [message, setMessage] = useState('');
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Manual video registration state
   const [showAddForm, setShowAddForm] = useState(false);
@@ -24,10 +25,10 @@ export default function AdminPage() {
     tournament: '',
     opponent: '',
     published_at: new Date().toISOString().substring(0, 16), // YYYY-MM-DDTHH:mm
-    win_team: '',
-    lose_team: '',
-    score_win: '',
-    score_lose: ''
+    home_team: '',
+    away_team: '',
+    home_score: '',
+    away_score: ''
   });
 
   // Check localStorage for saved credentials
@@ -77,6 +78,31 @@ export default function AdminPage() {
     setMessage('');
   };
 
+  const handleSyncVideos = async () => {
+    setIsRefreshing(true);
+    setMessage('');
+    setError('');
+    const savedPassword = localStorage.getItem('gugu_admin_pw');
+    
+    try {
+      const res = await fetch('/api/cron');
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setMessage(data.message || '업데이트가 완료되었습니다.');
+        if (savedPassword) {
+          handleLogin(savedPassword);
+        }
+      } else {
+        setError(data.message || '동기화 중 오류가 발생했습니다.');
+      }
+    } catch (e) {
+      console.error(e);
+      setError('비디오 수집에 실패했습니다.');
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   // Submit manual registration
   const handleCreateVideo = async (e) => {
     e.preventDefault();
@@ -109,10 +135,10 @@ export default function AdminPage() {
           tournament: '',
           opponent: '',
           published_at: new Date().toISOString().substring(0, 16),
-          win_team: '',
-          lose_team: '',
-          score_win: '',
-          score_lose: ''
+          home_team: '',
+          away_team: '',
+          home_score: '',
+          away_score: ''
         });
         // Refresh videos list
         handleLogin(savedPassword);
@@ -145,10 +171,10 @@ export default function AdminPage() {
           team_division: video.team_division,
           tournament: video.tournament,
           opponent: video.opponent,
-          win_team: video.win_team,
-          lose_team: video.lose_team,
-          score_win: video.score_win === '' || video.score_win === null ? null : Number(video.score_win),
-          score_lose: video.score_lose === '' || video.score_lose === null ? null : Number(video.score_lose)
+          home_team: video.home_team,
+          away_team: video.away_team,
+          home_score: video.home_score === '' || video.home_score === null || video.home_score === undefined ? null : Number(video.home_score),
+          away_score: video.away_score === '' || video.away_score === null || video.away_score === undefined ? null : Number(video.away_score)
         })
       });
 
@@ -272,6 +298,15 @@ export default function AdminPage() {
           </div>
 
           <div className="flex items-center gap-2">
+            <button
+              onClick={handleSyncVideos}
+              disabled={isRefreshing}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-primary/10 border border-primary/25 hover:bg-primary/20 text-xs font-semibold text-primary transition-all duration-300 disabled:opacity-50"
+              title="경기 영상 동기화 (YouTube/SOOP)"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <span className="hidden sm:inline">경기 동기화</span>
+            </button>
             <Link
               href="/"
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 text-xs font-semibold text-gray-400 hover:text-gray-200 transition-all duration-300"
@@ -441,42 +476,42 @@ export default function AdminPage() {
               <h5 className="text-xs font-bold text-gray-400">📊 경기 스코어 기록 (선택 사항)</h5>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">승리 팀</label>
+                  <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">홈팀 이름</label>
                   <input
                     type="text"
-                    placeholder="예: 꿈나무부"
-                    value={newVideo.win_team}
-                    onChange={(e) => handleNewVideoInputChange('win_team', e.target.value)}
+                    placeholder="예: 구구불독스"
+                    value={newVideo.home_team}
+                    onChange={(e) => handleNewVideoInputChange('home_team', e.target.value)}
                     className="w-full px-3 py-2 bg-dark-bg border border-white/5 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">패배 팀</label>
+                  <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">원정팀 이름</label>
                   <input
                     type="text"
                     placeholder="예: 마포자이언츠"
-                    value={newVideo.lose_team}
-                    onChange={(e) => handleNewVideoInputChange('lose_team', e.target.value)}
+                    value={newVideo.away_team}
+                    onChange={(e) => handleNewVideoInputChange('away_team', e.target.value)}
                     className="w-full px-3 py-2 bg-dark-bg border border-white/5 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">승리 팀 스코어</label>
+                  <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">홈팀 스코어</label>
                   <input
                     type="number"
                     placeholder="예: 8"
-                    value={newVideo.score_win}
-                    onChange={(e) => handleNewVideoInputChange('score_win', e.target.value === '' ? '' : Number(e.target.value))}
+                    value={newVideo.home_score}
+                    onChange={(e) => handleNewVideoInputChange('home_score', e.target.value === '' ? '' : Number(e.target.value))}
                     className="w-full px-3 py-2 bg-dark-bg border border-white/5 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">패배 팀 스코어</label>
+                  <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">원정팀 스코어</label>
                   <input
                     type="number"
                     placeholder="예: 5"
-                    value={newVideo.score_lose}
-                    onChange={(e) => handleNewVideoInputChange('score_lose', e.target.value === '' ? '' : Number(e.target.value))}
+                    value={newVideo.away_score}
+                    onChange={(e) => handleNewVideoInputChange('away_score', e.target.value === '' ? '' : Number(e.target.value))}
                     className="w-full px-3 py-2 bg-dark-bg border border-white/5 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
                   />
                 </div>
@@ -627,42 +662,42 @@ export default function AdminPage() {
                     {/* Score results row */}
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-white/5 p-3 rounded-2xl border border-white/5">
                       <div className="space-y-1 col-span-1">
-                        <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">승리 팀</label>
+                        <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">홈팀 이름</label>
                         <input
                           type="text"
-                          placeholder="예: 새싹부"
-                          value={video.win_team || ''}
-                          onChange={(e) => handleInputChange(video.id, 'win_team', e.target.value)}
+                          placeholder="예: 구구불독스"
+                          value={video.home_team || ''}
+                          onChange={(e) => handleInputChange(video.id, 'home_team', e.target.value)}
                           className="w-full px-3 py-2 bg-dark-bg border border-white/5 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
                         />
                       </div>
                       <div className="space-y-1 col-span-1">
-                        <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">패배 팀</label>
+                        <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">원정팀 이름</label>
                         <input
                           type="text"
                           placeholder="예: 마포자이언츠"
-                          value={video.lose_team || ''}
-                          onChange={(e) => handleInputChange(video.id, 'lose_team', e.target.value)}
+                          value={video.away_team || ''}
+                          onChange={(e) => handleInputChange(video.id, 'away_team', e.target.value)}
                           className="w-full px-3 py-2 bg-dark-bg border border-white/5 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
                         />
                       </div>
                       <div className="space-y-1 col-span-1">
-                        <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">승리 팀 스코어</label>
+                        <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">홈팀 스코어</label>
                         <input
                           type="number"
                           placeholder="예: 8"
-                          value={video.score_win !== null && video.score_win !== undefined ? video.score_win : ''}
-                          onChange={(e) => handleInputChange(video.id, 'score_win', e.target.value === '' ? null : Number(e.target.value))}
+                          value={video.home_score !== null && video.home_score !== undefined ? video.home_score : ''}
+                          onChange={(e) => handleInputChange(video.id, 'home_score', e.target.value === '' ? null : Number(e.target.value))}
                           className="w-full px-3 py-2 bg-dark-bg border border-white/5 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
                         />
                       </div>
                       <div className="space-y-1 col-span-1">
-                        <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">패배 팀 스코어</label>
+                        <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">원정팀 스코어</label>
                         <input
                           type="number"
                           placeholder="예: 5"
-                          value={video.score_lose !== null && video.score_lose !== undefined ? video.score_lose : ''}
-                          onChange={(e) => handleInputChange(video.id, 'score_lose', e.target.value === '' ? null : Number(e.target.value))}
+                          value={video.away_score !== null && video.away_score !== undefined ? video.away_score : ''}
+                          onChange={(e) => handleInputChange(video.id, 'away_score', e.target.value === '' ? null : Number(e.target.value))}
                           className="w-full px-3 py-2 bg-dark-bg border border-white/5 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
                         />
                       </div>

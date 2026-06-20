@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Settings, Play, Youtube, Tv, Calendar, Info, RefreshCw } from 'lucide-react';
+import { Settings, Play, Youtube, Tv, Calendar, Info } from 'lucide-react';
 import Link from 'next/link';
 import CategoryTabs from './CategoryTabs';
 import FilterBar from './FilterBar';
@@ -16,7 +16,6 @@ export default function PlaybookContainer({ initialVideos }) {
   const [selectedOpponent, setSelectedOpponent] = useState('');
   const [selectedPlatform, setSelectedPlatform] = useState('');
   const [selectedVideo, setSelectedVideo] = useState(null);
-  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Dynamic lists of unique Tournaments and Opponents for dropdown filters
   const { tournaments, opponents } = useMemo(() => {
@@ -88,21 +87,6 @@ export default function PlaybookContainer({ initialVideos }) {
     setSelectedPlatform('');
   };
 
-  const handleSyncVideos = async () => {
-    setIsRefreshing(true);
-    try {
-      const res = await fetch('/api/cron');
-      const data = await res.json();
-      alert(data.message || '업데이트가 완료되었습니다.');
-      window.location.reload();
-    } catch (e) {
-      console.error(e);
-      alert('비디오 수집에 실패했습니다.');
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
-
   return (
     <div className="flex-grow flex flex-col">
       {/* App Header */}
@@ -120,16 +104,6 @@ export default function PlaybookContainer({ initialVideos }) {
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Scrape Trigger (manual sync) */}
-            <button
-              onClick={handleSyncVideos}
-              disabled={isRefreshing}
-              className="p-2 rounded-xl bg-white/5 border border-white/5 text-gray-400 hover:text-primary transition-all duration-300 disabled:opacity-50"
-              title="경기 영상 동기화 (YouTube/SOOP)"
-            >
-              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-            </button>
-
             {/* Link to Admin Panel */}
             <Link
               href="/admin"

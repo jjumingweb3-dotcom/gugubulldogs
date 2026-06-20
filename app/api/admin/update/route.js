@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(request) {
   try {
-    const { password, id, team_division, tournament, opponent, title, win_team, lose_team, score_win, score_lose } = await request.json();
+    const { password, id, team_division, tournament, opponent, title, home_team, away_team, home_score, away_score } = await request.json();
     const adminPassword = process.env.ADMIN_PASSWORD || '1234';
 
     if (password !== adminPassword) {
@@ -20,10 +20,10 @@ export async function POST(request) {
       tournament,
       opponent,
       title,
-      win_team: win_team?.trim() || '',
-      lose_team: lose_team?.trim() || '',
-      score_win: score_win !== '' && score_win !== null && score_win !== undefined ? Number(score_win) : null,
-      score_lose: score_lose !== '' && score_lose !== null && score_lose !== undefined ? Number(score_lose) : null,
+      home_team: home_team?.trim() || '',
+      away_team: away_team?.trim() || '',
+      home_score: home_score !== '' && home_score !== null && home_score !== undefined ? Number(home_score) : null,
+      away_score: away_score !== '' && away_score !== null && away_score !== undefined ? Number(away_score) : null,
       parsed_status: team_division === '미분류' ? 'pending' : 'success'
     });
 

@@ -1,20 +1,8 @@
 import React from 'react';
 import { Calendar, Trophy, Users, Play } from 'lucide-react';
+import { getDisplayTitle, formatDate } from '@/lib/utils';
 
 export default function VideoCard({ video, onClick }) {
-  // Format published_at date to YYYY.MM.DD
-  const formatDate = (dateString) => {
-    try {
-      const date = new Date(dateString);
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      return `${year}.${month}.${day}`;
-    } catch (e) {
-      return dateString;
-    }
-  };
-
   // Get color styles for team divisions
   const getDivisionBadgeStyle = (division) => {
     switch (division) {
@@ -78,39 +66,31 @@ export default function VideoCard({ video, onClick }) {
         <div className="space-y-2">
           {/* Match Title */}
           <h3 className="text-sm md:text-base font-bold text-gray-100 line-clamp-2 leading-snug group-hover:text-primary transition-colors duration-200">
-            {video.title}
+            {getDisplayTitle(video)}
           </h3>
 
           {/* Score Info */}
-          {video.score_win !== undefined && video.score_win !== null && video.score_lose !== null ? (
+          {video.home_score !== undefined && video.home_score !== null && video.away_score !== undefined && video.away_score !== null ? (
             <div className="flex items-center gap-1.5 mt-2 bg-primary/10 border border-primary/20 rounded-xl px-2.5 py-1 w-fit">
               <span className="text-[11px] font-bold text-primary flex items-center gap-1">
-                {Number(video.score_win) === Number(video.score_lose) ? (
+                {Number(video.home_score) === Number(video.away_score) ? (
                   <>
                     🤝 무승부
                     <span className="text-white bg-black/40 px-1.5 py-0.5 rounded text-[10px] ml-1 font-extrabold font-mono">
-                      {video.score_win} : {video.score_lose}
+                      {video.home_score} : {video.away_score}
                     </span>
                   </>
                 ) : (
                   <>
-                    🏆 {video.win_team ? `${video.win_team} 승` : '경기 결과'}
+                    🏆 {Number(video.home_score) > Number(video.away_score) ? `${video.home_team || '홈팀'} 승` : `${video.away_team || '상대팀'} 승`}
                     <span className="text-white bg-black/40 px-1.5 py-0.5 rounded text-[10px] ml-1 font-extrabold font-mono">
-                      {video.score_win} : {video.score_lose}
+                      {video.home_score} : {video.away_score}
                     </span>
                   </>
                 )}
               </span>
             </div>
-          ) : (
-            video.win_team && (
-              <div className="flex items-center gap-1.5 mt-2 bg-primary/10 border border-primary/20 rounded-xl px-2.5 py-1 w-fit">
-                <span className="text-[11px] font-bold text-primary flex items-center gap-1">
-                  🏆 {video.win_team} 승
-                </span>
-              </div>
-            )
-          )}
+          ) : null}
         </div>
 
         <div className="mt-4 pt-3 border-t border-white/5 space-y-1.5 text-xs text-gray-400">
