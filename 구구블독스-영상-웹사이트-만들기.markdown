@@ -1,0 +1,109 @@
+# 구구블독스 영상 허브 - 상품개발 문서 (PRD)
+
+**버전**: v1.0  
+**작성일**: 2026-06-10  
+**대상**: 유튜브 @구구불독스유소년야구 / SOOP 채널 (추후 추가)
+
+---
+
+## 1. 제품 개요
+
+- **이름**: 구구블독스 플레이북
+- **한줄 정의**: 유튜브와 SOOP에 흩어진 중계 영상을 팀별·대회별·날짜별로 모아 링크로 보여주는 학부모 전용 웹앱
+- **핵심 원칙**: 영상은 **다운로드/임베드하지 않고, 원본 링크만 사용**. 사용자는 썸네일과 정보로 바로 알아보고 클릭하면 유튜브/SOOP 앱으로 이동
+
+![홈 화면 예시](container:///mnt/data/ui_home_tabs_4985beb0.jpg)
+
+## 2. 배경과 문제
+
+1. 영상 분산: 코치 개인 유튜브, SOOP에 업로드
+2. 팀이 3개: 새싹부 / 꿈나무부 / 유소년부 → 학부모는 내 아이 경기만 찾고 싶음
+3. 제목 불규칙: "240511 구구vs송파", "U12 예선 2차전"
+4. 현재는 단톡방 링크를 수동으로 뒤짐
+
+## 3. 타겟 사용자
+
+- **1차**: 학부모 (30-45세, 모바일 95%)
+- **2차**: 코치 (업로드 확인용)
+- 핵심 니즈: "3클릭 안에 지난주 꿈나무부 경기 찾기"
+
+## 4. 핵심 기능 (MVP)
+
+### 4.1 수집
+- **YouTube**: Data API v3 `channels.list(forHandle)` → uploads 플레이리스트 → `playlistItems.list` (1 unit/호출)
+  - 기본 쿼터 10,000 units/일, search(100 units)는 사용 안 함
+- **SOOP**: 공식 API 없음 → 채널 VOD 목록 파싱, 썸네일 URL과 링크만 저장
+- 주기: 1시간 Cron
+
+### 4.2 자동 분류
+| 구분 | 규칙 |
+| --- | --- |
+| 팀 | 제목에 `새싹` → 새싹부, `꿈나무` → 꿈나무부, `유소년|U13|U15` → 유소년부 |
+| 대회 | 정규식 `(?P<tourn>[가-힣]+리그|컵|대회)` |
+| 상대 | `vs\s*(?P<opp>[가-힣A-Za-z0-9]+)` |
+| 실패 | '미분류' → 관리자 수정 |
+
+### 4.3 화면 구성
+- **상단 탭**: 전체 / 새싹부 / 꿈나무부 / 유소년부
+- **카드**: [썸네일] + 날짜 + 팀 + 상대 + 대회명
+- **상세**: 큰 썸네일 + "유튜브에서 열기" / "SOOP에서 열기" 버튼 (링크만)
+
+![상세 화면 예시](container:///mnt/data/ui_detail_link_9ff883a6.jpg)
+
+> 사용자는 이미지(썸네일)로 경기를 기억하고, 버튼 하나로 원본으로 이동합니다. 임베드 플레이어를 넣지 않아 저작권 리스크와 트래픽 비용을 피합니다.
+
+## 5. 데이터 모델
+
+```sql
+videos (
+  id uuid PK,
+  source text, -- 'youtube' or 'soop'
+  source_video_id text UNIQUE,
+  title text,
+  thumbnail_url text, -- YouTube maxresdefault.jpg 또는 SOOP 캡처
+  published_at timestamptz,
+  url text, -- https://youtu.be/xxx 또는 https://sooplive.com/...
+  team_division text, -- 새싹부/꿈나무부/유소년부/미분류
+  tournament text,
+  opponent text,
+  parsed_status text
+)
+```
+
+## 6. 링크 중심 UX 원칙
+
+1. **썸네일 = 인식 도구**: YouTube는 `https://i.ytimg.com/vi/{id}/hqdefault.jpg` 자동 제공
+2. **SOOP도 동일**: VOD 썸네일 URL 저장
+3. **클릭 동작**: 항상 `target="_blank"` 새 창, 모바일은 앱으로 딥링크
+4. **표시**: 카드 우측 하단에 작은 플랫폼 아이콘 (YouTube 빨강, SOOP 파랑)
+
+## 7. 기술 스택
+
+- Frontend: Next.js 14 (App Router), Tailwind, shadcn/ui
+- Backend: Supabase Postgres + Vercel Cron
+- 크롤러: Node.js googleapis, cheerio
+- 배포: Vercel (무료 티어로 충분)
+
+## 8. 법적·운영
+
+- YouTube ToS 준수: 영상 저장·재가공 금지, 링크만 제공
+- SOOP: VOD 링크 공유는 허용 범위, 다운로드 기능 제외
+- 개인정보: 선수 이름 노출 최소화, 학년/등번호만 사용
+
+## 9. 로드맵
+
+- **Week 1**: YouTube 수집 + 팀 분류
+- **Week 2**: SOOP 파서 + 썸네일 저장
+- **Week 3**: 탭 UI + 링크 버튼
+- **Week 4**: 관리자 수정 + 학부모 베타
+
+## 10. 성공 지표
+
+- 영상 탐색 시간 3분 → 20초
+- 주간 활성 학부모 70%
+- 수동 분류율 15% 이하
+
+---
+
+### 부록: 코덱스 프롬프트
+> "Next.js로 구구블독스 영상 허브 만들어줘. 유튜브 채널 @구구불독스유소년야구에서 playlistItems.list로 영상을 가져와 Supabase에 저장. 제목에서 새싹부/꿈나무부/유소년부 자동 분류. 홈에 팀 탭 넣고, 각 카드는 썸네일과 날짜·상대 표시, 클릭 시 youtu.be 링크로 새 창 열기. SOOP 링크도 동일 구조로 추가 가능하게 설계해줘."

@@ -1,0 +1,95 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #c5ff1a;
+  --color-primary-hover: #b2eb00;
+  --color-dark-bg: #090b0e;
+  --color-card-bg: rgba(22, 28, 38, 0.6);
+  --color-card-border: rgba(255, 255, 255, 0.07);
+  --color-glass-bg: rgba(15, 20, 30, 0.75);
+  --color-glass-border: rgba(255, 255, 255, 0.05);
+}
+
+:root {
+  --background: #090b0e;
+  --foreground: #f3f4f6;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(197, 255, 26, 0.03) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(59, 130, 246, 0.03) 0%, transparent 40%);
+  background-attachment: fixed;
+  overflow-x: hidden;
+}
+
+/* Custom premium scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(15, 17, 21, 0.5);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #c5ff1a;
+}
+
+/* Glassmorphism helpers */
+.glass {
+  background: rgba(15, 20, 30, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.glass-card {
+  background: rgba(22, 28, 38, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+  border-color: rgba(197, 255, 26, 0.25);
+  box-shadow: 0 10px 30px -10px rgba(197, 255, 26, 0.1);
+  transform: translateY(-2px);
+}
+
+/* Tab indicator animation helper */
+.tab-active {
+  color: #090b0e;
+  background-color: #c5ff1a;
+  box-shadow: 0 4px 12px rgba(197, 255, 26, 0.25);
+}
+
+/* Hide scrollbar for CategoryTabs horizontal slider */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+/* Mobile Bottom Sheet Slide Up Animation */
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.animate-slideUp {
+  animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
