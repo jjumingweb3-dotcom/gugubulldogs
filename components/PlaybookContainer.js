@@ -116,7 +116,6 @@ export default function PlaybookContainer({ initialVideos }) {
               <h1 className="text-sm md:text-base font-extrabold tracking-tight text-white flex items-center gap-1">
                 구구불독스 <span className="text-primary">플레이북</span>
               </h1>
-              <p className="text-[10px] text-gray-500">유소년 야구단 중계 허브</p>
             </div>
           </div>
 

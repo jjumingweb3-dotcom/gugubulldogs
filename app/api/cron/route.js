@@ -148,8 +148,8 @@ async function resolveYtChannelId(handle) {
 export async function GET() {
   const youtubeHandle = process.env.YOUTUBE_CHANNEL_HANDLE || '@구구불독스유소년야구';
   const youtubeChannelIdOverride = process.env.YOUTUBE_CHANNEL_ID || 'UCDTAqwh48UIZgczSQYTtFHw'; // Fallback verified channel ID
-  const soopNewBjId = 'pik7688';      // U9 새싹부
-  const soopOldBjId = 'ncoolpis1245';  // U13 유소년부
+  const soopNewBjId = process.env.SOOP_NEW_BJ_ID || 'pik7688';      // U9 새싹부
+  const soopOldBjId = process.env.SOOP_OLD_BJ_ID || 'ncoolpis1245';  // U13 유소년부
   
   let allScrapedVideos = [];
   let youtubeSuccess = false;
