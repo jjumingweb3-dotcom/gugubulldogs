@@ -20,6 +20,8 @@ export default function AdminPage() {
   const [newTournamentName, setNewTournamentName] = useState('');
   const [isAddingTournament, setIsAddingTournament] = useState(false);
   const [showTournamentForm, setShowTournamentForm] = useState(false);
+  const [diagnostics, setDiagnostics] = useState(null);
+  const [isDiagnosing, setIsDiagnosing] = useState(false);
 
   // Manual video registration state
   const [showAddForm, setShowAddForm] = useState(false);
@@ -179,6 +181,31 @@ export default function AdminPage() {
     } catch (e) {
       console.error(e);
       setError('서버 통신 오류');
+    }
+  };
+
+  const handleDiagnoseDB = async () => {
+    setIsDiagnosing(true);
+    setDiagnostics(null);
+    setError('');
+    const savedPassword = localStorage.getItem('gugu_admin_pw');
+    try {
+      const res = await fetch('/api/admin/diagnose', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: savedPassword })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setDiagnostics(data);
+      } else {
+        setError(data.error || '진단에 실패했습니다.');
+      }
+    } catch (e) {
+      console.error(e);
+      setError('서버 통신 중 오류가 발생했습니다.');
+    } finally {
+      setIsDiagnosing(false);
     }
   };
 
@@ -521,6 +548,101 @@ export default function AdminPage() {
                 </div>
               ) : (
                 <p className="text-xs text-gray-500">등록된 대회명이 없습니다. 대회를 추가해 주세요.</p>
+              )}
+            </div>
+
+            {/* Database Diagnosis Button & Output */}
+            <div className="pt-4 border-t border-white/5 space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <span className="text-[11px] text-gray-400">데이터베이스 연동이 불안정하거나 대회 추가/삭제가 안 되나요?</span>
+                <button
+                  type="button"
+                  onClick={handleDiagnoseDB}
+                  disabled={isDiagnosing}
+                  className="px-3 py-1.5 bg-amber-500/10 border border-amber-500/20 hover:bg-amber-500/20 text-amber-400 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer"
+                >
+                  {isDiagnosing ? '진단 중...' : 'DB 연결 및 권한 진단'}
+                </button>
+              </div>
+
+              {diagnostics && (
+                <div className="p-4 bg-white/5 border border-white/5 rounded-2xl text-xs space-y-3 animate-fadeIn text-gray-300">
+                  <h5 className="font-extrabold text-amber-400">🔍 진단 리포트</h5>
+                  
+                  <div className="space-y-1">
+                    <div>실행 모드: <strong className="text-white">{diagnostics.mode === 'supabase' ? 'Supabase 연동 모드' : '로컬 파일 모드'}</strong></div>
+                    {diagnostics.mode === 'local-file' && (
+                      <div className="text-amber-500 bg-amber-950/20 p-2.5 rounded-lg border border-amber-500/15 leading-relaxed">
+                        ⚠️ 현재 로컬 파일 데이터베이스 모드입니다. Vercel 배포 환경에서는 서버리스 파일 쓰기가 불가능하므로, Vercel 환경 변수설정에 <strong>SUPABASE_URL</strong>과 <strong>SUPABASE_ANON_KEY</strong>(또는 <strong>SUPABASE_SERVICE_KEY</strong>)를 올바르게 입력하셔야 대회 추가/삭제가 작동합니다.
+                      </div>
+                    )}
+                  </div>
+
+                  {diagnostics.mode === 'supabase' && diagnostics.diagnostics && (
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-1.5">
+                        <span>영상(videos) 테이블 상태:</span>
+                        {diagnostics.diagnostics.videosTable?.success ? (
+                          <span className="text-emerald-400 font-bold">정상 (데이터 {diagnostics.diagnostics.videosTable.count}건)</span>
+                        ) : (
+                          <span className="text-red-400 font-bold">오류 ({diagnostics.diagnostics.videosTable?.error})</span>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-1.5">
+                        <span>대회(tournaments) 테이블 상태:</span>
+                        {diagnostics.diagnostics.tournamentsTable?.success ? (
+                          <span className="text-emerald-400 font-bold">정상</span>
+                        ) : (
+                          <span className="text-red-400 font-bold">오류 ({diagnostics.diagnostics.tournamentsTable?.error})</span>
+                        )}
+                      </div>
+
+                      {diagnostics.diagnostics.tournamentsTable?.code === '42P01' && (
+                        <div className="bg-red-955/20 p-3 rounded-lg border border-red-500/15 text-red-300 space-y-1.5 leading-relaxed">
+                          <div><strong>해결 방법 (테이블 미생성):</strong> Supabase SQL Editor에서 아래 SQL을 실행하여 tournaments 테이블을 생성해 주세요.</div>
+                          <pre className="p-2 bg-black/40 rounded text-[10px] font-mono text-gray-400 overflow-x-auto select-all">
+{`CREATE TABLE IF NOT EXISTS tournaments (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name TEXT UNIQUE NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+INSERT INTO tournaments (name) VALUES 
+('남양주시장기 리그'),
+('백호기 전국대회'),
+('U13 주말리그'),
+('꿈나무 리그'),
+('U15 전국선수권대회'),
+('친선경기')
+ON CONFLICT (name) DO NOTHING;`}
+                          </pre>
+                        </div>
+                      )}
+
+                      <div className="flex items-center gap-1.5">
+                        <span>대회 쓰기/삭제 테스트:</span>
+                        {diagnostics.diagnostics.writeTest?.success ? (
+                          <span className="text-emerald-400 font-bold">성공 (권한 확인됨)</span>
+                        ) : diagnostics.diagnostics.writeTest ? (
+                          <span className="text-red-400 font-bold">실패 ({diagnostics.diagnostics.writeTest.error})</span>
+                        ) : (
+                          <span className="text-gray-500">테스트할 수 없음 (테이블 오류)</span>
+                        )}
+                      </div>
+
+                      {diagnostics.diagnostics.writeTest && !diagnostics.diagnostics.writeTest.success && (
+                        <div className="bg-red-955/20 p-3 rounded-lg border border-red-500/15 text-red-300 space-y-1.5 leading-relaxed">
+                          <div><strong>해결 방법 (권한/RLS 오류):</strong> 테이블은 존재하나 Row Level Security(RLS) 정책에 의해 쓰기/삭제가 제한되었습니다. Supabase SQL Editor에서 아래 SQL을 실행하여 RLS를 끄거나 정책을 허용해 주세요.</div>
+                          <pre className="p-2 bg-black/40 rounded text-[10px] font-mono text-gray-400 overflow-x-auto select-all">
+{`-- tournaments 테이블의 Row Level Security 해제
+ALTER TABLE tournaments DISABLE ROW LEVEL SECURITY;`}
+                          </pre>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               )}
             </div>
           </div>
