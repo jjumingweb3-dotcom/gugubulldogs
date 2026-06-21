@@ -933,6 +933,7 @@ ALTER TABLE tournaments DISABLE ROW LEVEL SECURITY;`}
                   type="date"
                   value={newVideo.published_at}
                   onChange={(e) => handleNewVideoInputChange('published_at', e.target.value)}
+                  style={{ colorScheme: 'dark' }}
                   className="w-full px-3 py-2 bg-dark-bg border border-white/5 rounded-xl text-xs md:text-sm text-gray-300 outline-none focus:border-primary/20"
                 />
               </div>
@@ -1200,6 +1201,7 @@ ALTER TABLE tournaments DISABLE ROW LEVEL SECURITY;`}
                           type="date"
                           value={video.published_at ? video.published_at.substring(0, 10) : ''}
                           onChange={(e) => handleInputChange(video.id, 'published_at', e.target.value)}
+                          style={{ colorScheme: 'dark' }}
                           className="w-full px-3 py-2.5 bg-dark-bg border border-white/5 rounded-xl text-xs md:text-sm text-gray-300 outline-none focus:border-primary/20"
                         />
                       </div>
