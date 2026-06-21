@@ -304,6 +304,41 @@ export default function AdminPage() {
     }
   };
 
+  const handleDeleteVideo = async (id, title) => {
+    if (!confirm(`'${title}' 영상을 정말로 삭제하시겠습니까?\n삭제된 영상은 복구할 수 없습니다.`)) return;
+
+    setSavingId(id);
+    setMessage('');
+    setError('');
+    const savedPassword = localStorage.getItem('gugu_admin_pw');
+
+    try {
+      const res = await fetch('/api/admin/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          password: savedPassword,
+          id: id
+        })
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        setMessage('경기가 성공적으로 삭제되었습니다.');
+        // Refresh videos list
+        handleLogin(savedPassword);
+      } else {
+        setError(data.error || '삭제에 실패했습니다.');
+      }
+    } catch (e) {
+      console.error(e);
+      setError('서버 통신 실패');
+    } finally {
+      setSavingId(null);
+    }
+  };
+
   const handleInputChange = (id, field, value) => {
     setVideos(prev =>
       prev.map(v => (v.id === id ? { ...v, [field]: value } : v))
@@ -1187,23 +1222,34 @@ ALTER TABLE tournaments DISABLE ROW LEVEL SECURITY;`}
                         <span>원본 영상 ID: <code className="text-gray-400 font-mono">{video.source_video_id}</code></span>
                         <span>등록 일시: <span className="text-gray-400 font-mono">{new Date(video.published_at).toLocaleString('ko-KR')}</span></span>
                       </span>
-                      <button
-                        onClick={() => handleUpdateVideo(video)}
-                        disabled={isSaving}
-                        className="flex items-center gap-1.5 px-4 py-2 bg-primary hover:bg-primary-hover text-dark-bg font-bold text-xs md:text-sm rounded-xl transition-all duration-300 disabled:opacity-50 shadow-md active:scale-95"
-                      >
-                        {isSaving ? (
-                          <>
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                            저장 중...
-                          </>
-                        ) : (
-                          <>
-                            <Save className="w-3.5 h-3.5" />
-                            저장하기
-                          </>
-                        )}
-                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteVideo(video.id, video.title)}
+                          disabled={isSaving}
+                          className="flex items-center gap-1.5 px-3 py-2 bg-red-955/20 border border-red-500/20 hover:bg-red-955/40 text-red-400 font-bold text-xs md:text-sm rounded-xl transition-all duration-300 disabled:opacity-50 active:scale-95 cursor-pointer"
+                        >
+                          삭제하기
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleUpdateVideo(video)}
+                          disabled={isSaving}
+                          className="flex items-center gap-1.5 px-4 py-2 bg-primary hover:bg-primary-hover text-dark-bg font-bold text-xs md:text-sm rounded-xl transition-all duration-300 disabled:opacity-50 shadow-md active:scale-95 cursor-pointer"
+                        >
+                          {isSaving ? (
+                            <>
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              저장 중...
+                            </>
+                          ) : (
+                            <>
+                              <Save className="w-3.5 h-3.5" />
+                              저장하기
+                            </>
+                          )}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>

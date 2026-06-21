@@ -142,10 +142,10 @@ export default function PlaybookContainer({ initialVideos, initialTournaments = 
           {/* Tournament Filter Chips */}
           <div className="flex flex-col gap-3 pt-1">
             <span className="text-xs font-bold uppercase tracking-wider text-gray-500">대회별 경기</span>
-            <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1.5 -mx-4 px-4 sm:mx-0 sm:px-0 scroll-smooth">
+            <div className="flex flex-wrap gap-2 pb-1">
               <button
                 onClick={() => setSelectedTournament('')}
-                className={`px-3.5 py-2 rounded-xl text-xs md:text-sm font-semibold whitespace-nowrap border transition-all duration-200 ${
+                className={`px-3.5 py-2 rounded-xl text-xs md:text-sm font-semibold whitespace-nowrap border transition-all duration-200 cursor-pointer ${
                   !selectedTournament
                     ? 'bg-primary text-dark-bg border-primary shadow-[0_0_10px_rgba(197,255,26,0.2)]'
                     : 'bg-white/5 border-white/5 text-gray-400 hover:text-gray-200 hover:bg-white/10'
@@ -159,7 +159,7 @@ export default function PlaybookContainer({ initialVideos, initialTournaments = 
                   <button
                     key={t}
                     onClick={() => setSelectedTournament(selectedTournament === t ? '' : t)}
-                    className={`px-3.5 py-2 rounded-xl text-xs md:text-sm font-semibold whitespace-nowrap border transition-all duration-200 ${
+                    className={`px-3.5 py-2 rounded-xl text-xs md:text-sm font-semibold whitespace-nowrap border transition-all duration-200 cursor-pointer ${
                       selectedTournament === t
                         ? 'bg-primary text-dark-bg border-primary shadow-[0_0_10px_rgba(197,255,26,0.2)]'
                         : 'bg-white/5 border-white/5 text-gray-400 hover:text-gray-200 hover:bg-white/10'
