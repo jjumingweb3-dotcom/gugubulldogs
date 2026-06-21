@@ -25,6 +25,7 @@ export default function AdminPage() {
 
   // Manual video registration state
   const [showAddForm, setShowAddForm] = useState(false);
+  const [newVideoBulldogsPos, setNewVideoBulldogsPos] = useState('away'); // 'away' or 'home'
   const [newVideo, setNewVideo] = useState({
     source: 'youtube',
     url: '',
@@ -34,7 +35,7 @@ export default function AdminPage() {
     opponent: '',
     published_at: new Date().toISOString().substring(0, 16), // YYYY-MM-DDTHH:mm
     home_team: '',
-    away_team: '',
+    away_team: '구구불독스',
     home_score: '',
     away_score: '',
     win_team: ''
@@ -242,11 +243,12 @@ export default function AdminPage() {
           opponent: '',
           published_at: new Date().toISOString().substring(0, 16),
           home_team: '',
-          away_team: '',
+          away_team: '구구불독스',
           home_score: '',
           away_score: '',
           win_team: ''
         });
+        setNewVideoBulldogsPos('away');
         // Refresh videos list
         handleLogin(savedPassword);
       } else {
@@ -313,6 +315,142 @@ export default function AdminPage() {
       ...prev,
       [field]: value
     }));
+  };
+
+  const handleNewVideoGameResultChange = (field, value) => {
+    setNewVideo(prev => {
+      let opponent = field === 'opponent' ? value : prev.opponent;
+      let position = field === 'position' ? value : newVideoBulldogsPos;
+      
+      let bulldogsScore = position === 'home' ? prev.home_score : prev.away_score;
+      let opponentScore = position === 'home' ? prev.away_score : prev.home_score;
+      let winTeam = prev.win_team || '';
+
+      if (field === 'opponent') {
+        opponent = value;
+      } else if (field === 'position') {
+        position = value;
+        setNewVideoBulldogsPos(value);
+        const tempB = bulldogsScore;
+        bulldogsScore = opponentScore;
+        opponentScore = tempB;
+      } else if (field === 'bulldogs_score') {
+        bulldogsScore = value === '' ? '' : Number(value);
+      } else if (field === 'opponent_score') {
+        opponentScore = value === '' ? '' : Number(value);
+      } else if (field === 'win_team') {
+        winTeam = value;
+      }
+
+      let home_team = '';
+      let away_team = '';
+      let home_score = '';
+      let away_score = '';
+
+      if (position === 'home') {
+        home_team = '구구불독스';
+        away_team = opponent;
+        home_score = bulldogsScore;
+        away_score = opponentScore;
+      } else {
+        away_team = '구구불독스';
+        home_team = opponent;
+        away_score = bulldogsScore;
+        home_score = opponentScore;
+      }
+
+      if (field !== 'win_team') {
+        if (bulldogsScore !== '' && opponentScore !== '' && bulldogsScore !== null && opponentScore !== null) {
+          if (Number(bulldogsScore) > Number(opponentScore)) {
+            winTeam = '구구불독스';
+          } else if (Number(opponentScore) > Number(bulldogsScore)) {
+            winTeam = opponent;
+          } else {
+            winTeam = '무승부';
+          }
+        } else {
+          winTeam = '';
+        }
+      }
+
+      return {
+        ...prev,
+        opponent,
+        home_team,
+        away_team,
+        home_score,
+        away_score,
+        win_team: winTeam
+      };
+    });
+  };
+
+  const handleGameResultChange = (id, field, value, currentVideo) => {
+    let opponent = currentVideo.opponent || '';
+    let isBulldogsHome = currentVideo.home_team === '구구불독스';
+    let bulldogsPos = isBulldogsHome ? 'home' : 'away';
+    let bulldogsScore = isBulldogsHome ? currentVideo.home_score : currentVideo.away_score;
+    let opponentScore = isBulldogsHome ? currentVideo.away_score : currentVideo.home_score;
+    let winTeam = currentVideo.win_team || '';
+
+    if (field === 'opponent') {
+      opponent = value;
+    } else if (field === 'position') {
+      bulldogsPos = value;
+    } else if (field === 'bulldogs_score') {
+      bulldogsScore = value === '' ? null : Number(value);
+    } else if (field === 'opponent_score') {
+      opponentScore = value === '' ? null : Number(value);
+    } else if (field === 'win_team') {
+      winTeam = value;
+    }
+
+    let home_team = '';
+    let away_team = '';
+    let home_score = null;
+    let away_score = null;
+
+    if (bulldogsPos === 'home') {
+      home_team = '구구불독스';
+      away_team = opponent;
+      home_score = bulldogsScore;
+      away_score = opponentScore;
+    } else {
+      away_team = '구구불독스';
+      home_team = opponent;
+      away_score = bulldogsScore;
+      home_score = opponentScore;
+    }
+
+    if (field !== 'win_team') {
+      if (bulldogsScore !== null && opponentScore !== null) {
+        if (bulldogsScore > opponentScore) {
+          winTeam = '구구불독스';
+        } else if (opponentScore > bulldogsScore) {
+          winTeam = opponent;
+        } else {
+          winTeam = '무승부';
+        }
+      } else {
+        winTeam = '';
+      }
+    }
+
+    setVideos(prev =>
+      prev.map(v =>
+        v.id === id
+          ? {
+              ...v,
+              opponent,
+              home_team,
+              away_team,
+              home_score,
+              away_score,
+              win_team: winTeam
+            }
+          : v
+      )
+    );
   };
 
   const filteredVideos = videos.filter(v => {
@@ -708,7 +846,7 @@ ALTER TABLE tournaments DISABLE ROW LEVEL SECURITY;`}
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1">
                 <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">부서 분류</label>
                 <select
@@ -738,76 +876,87 @@ ALTER TABLE tournaments DISABLE ROW LEVEL SECURITY;`}
                   ))}
                 </select>
               </div>
-
-              <div className="space-y-1">
-                <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">상대팀</label>
-                <input
-                  type="text"
-                  placeholder="예: 마포자이언츠"
-                  value={newVideo.opponent}
-                  onChange={(e) => handleNewVideoInputChange('opponent', e.target.value)}
-                  className="w-full px-3 py-2 bg-dark-bg border border-white/5 rounded-xl text-xs md:text-sm text-gray-300 outline-none focus:border-primary/20"
-                />
-              </div>
             </div>
 
-            {/* Score inputs for new video */}
+            {/* Score and Opponent inputs for new video */}
             <div className="p-4 bg-white/5 rounded-2xl border border-white/5 space-y-3">
-              <h5 className="text-xs font-bold text-gray-400">📊 경기 스코어 및 결과 기록 (선택 사항)</h5>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">홈팀 이름</label>
-                  <input
-                    type="text"
-                    placeholder="예: 구구불독스"
-                    value={newVideo.home_team}
-                    onChange={(e) => handleNewVideoInputChange('home_team', e.target.value)}
-                    className="w-full px-3 py-2 bg-dark-bg border border-white/5 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">원정팀 이름</label>
-                  <input
-                    type="text"
-                    placeholder="예: 마포자이언츠"
-                    value={newVideo.away_team}
-                    onChange={(e) => handleNewVideoInputChange('away_team', e.target.value)}
-                    className="w-full px-3 py-2 bg-dark-bg border border-white/5 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">홈팀 스코어</label>
-                  <input
-                    type="number"
-                    placeholder="예: 8"
-                    value={newVideo.home_score}
-                    onChange={(e) => handleNewVideoInputChange('home_score', e.target.value === '' ? '' : Number(e.target.value))}
-                    className="w-full px-3 py-2 bg-dark-bg border border-white/5 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">원정팀 스코어</label>
-                  <input
-                    type="number"
-                    placeholder="예: 5"
-                    value={newVideo.away_score}
-                    onChange={(e) => handleNewVideoInputChange('away_score', e.target.value === '' ? '' : Number(e.target.value))}
-                    className="w-full px-3 py-2 bg-dark-bg border border-white/5 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
-                  />
-                </div>
-              </div>
-              <div className="pt-2 border-t border-white/5">
-                <div className="space-y-1 max-w-md">
-                  <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">승리 팀 이름 (선택)</label>
-                  <input
-                    type="text"
-                    placeholder="예: 구구불독스 (입력 안하면 스코어 비교 후 자동 표기, 무승부 시 '무승부' 입력)"
-                    value={newVideo.win_team}
-                    onChange={(e) => handleNewVideoInputChange('win_team', e.target.value)}
-                    className="w-full px-3 py-2 bg-dark-bg border border-white/5 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
-                  />
-                </div>
-              </div>
+              <h5 className="text-xs font-bold text-gray-400">📊 경기 결과 입력 (상대팀 및 스코어)</h5>
+              
+              {(() => {
+                const isBulldogsHome = newVideoBulldogsPos === 'home';
+                const bulldogsScore = isBulldogsHome ? newVideo.home_score : newVideo.away_score;
+                const opponentScore = isBulldogsHome ? newVideo.away_score : newVideo.home_score;
+                const opponentName = newVideo.opponent || '';
+
+                return (
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      {/* 1. Opponent Team Name */}
+                      <div className="space-y-1 sm:col-span-1">
+                        <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">상대팀 이름</label>
+                        <input
+                          type="text"
+                          placeholder="예: 동작리틀"
+                          value={opponentName}
+                          onChange={(e) => handleNewVideoGameResultChange('opponent', e.target.value)}
+                          className="w-full px-3 py-2 bg-dark-bg border border-white/5 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
+                          required={newVideo.team_division !== '미분류'}
+                        />
+                      </div>
+
+                      {/* 2. Bulldogs position (Home/Away) */}
+                      <div className="space-y-1 sm:col-span-1">
+                        <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">구구불독스 위치</label>
+                        <select
+                          value={newVideoBulldogsPos}
+                          onChange={(e) => handleNewVideoGameResultChange('position', e.target.value)}
+                          className="w-full px-3 py-2.5 bg-dark-bg border border-white/5 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
+                        >
+                          <option value="away">원정 (선공)</option>
+                          <option value="home">홈 (후공)</option>
+                        </select>
+                      </div>
+
+                      {/* 3. Scores */}
+                      <div className="grid grid-cols-2 gap-3 sm:col-span-1">
+                        <div className="space-y-1">
+                          <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">불독스 점수</label>
+                          <input
+                            type="number"
+                            placeholder="예: 8"
+                            value={bulldogsScore}
+                            onChange={(e) => handleNewVideoGameResultChange('bulldogs_score', e.target.value)}
+                            className="w-full px-3 py-2 bg-dark-bg border border-white/5 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">상대팀 점수</label>
+                          <input
+                            type="number"
+                            placeholder="예: 5"
+                            value={opponentScore}
+                            onChange={(e) => handleNewVideoGameResultChange('opponent_score', e.target.value)}
+                            className="w-full px-3 py-2 bg-dark-bg border border-white/5 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="pt-2 border-t border-white/5">
+                      <div className="space-y-1 max-w-md">
+                        <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">승리 팀 이름 (점수 입력 시 자동 계산)</label>
+                        <input
+                          type="text"
+                          placeholder="예: 구구불독스 (점수 입력 시 자동 입력되며, 변경 가능)"
+                          value={newVideo.win_team || ''}
+                          onChange={(e) => handleNewVideoGameResultChange('win_team', e.target.value)}
+                          className="w-full px-3 py-2 bg-dark-bg border border-white/5 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
 
             <div className="flex justify-end gap-2 pt-2">
@@ -899,7 +1048,7 @@ ALTER TABLE tournaments DISABLE ROW LEVEL SECURITY;`}
                       />
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {/* Team select dropdown */}
                       <div className="space-y-1">
                         <div className="flex items-center justify-between">
@@ -945,76 +1094,87 @@ ALTER TABLE tournaments DISABLE ROW LEVEL SECURITY;`}
                           )}
                         </select>
                       </div>
-
-                      {/* Opponent field */}
-                      <div className="space-y-1">
-                        <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">상대팀</label>
-                        <input
-                          type="text"
-                          placeholder="예: 마포자이언츠"
-                          value={video.opponent || ''}
-                          onChange={(e) => handleInputChange(video.id, 'opponent', e.target.value)}
-                          className="w-full px-3 py-2.5 bg-dark-bg border border-white/5 rounded-xl text-xs md:text-sm text-gray-300 outline-none focus:border-primary/20 transition-colors"
-                        />
-                      </div>
                     </div>
 
                     {/* Score results row */}
-                    <div className="bg-white/5 p-3 rounded-2xl border border-white/5 space-y-3">
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                        <div className="space-y-1 col-span-1">
-                          <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">홈팀 이름</label>
-                          <input
-                            type="text"
-                            placeholder="예: 구구불독스"
-                            value={video.home_team || ''}
-                            onChange={(e) => handleInputChange(video.id, 'home_team', e.target.value)}
-                            className="w-full px-3 py-2 bg-dark-bg border border-white/5 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
-                          />
-                        </div>
-                        <div className="space-y-1 col-span-1">
-                          <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">원정팀 이름</label>
-                          <input
-                            type="text"
-                            placeholder="예: 마포자이언츠"
-                            value={video.away_team || ''}
-                            onChange={(e) => handleInputChange(video.id, 'away_team', e.target.value)}
-                            className="w-full px-3 py-2 bg-dark-bg border border-white/5 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
-                          />
-                        </div>
-                        <div className="space-y-1 col-span-1">
-                          <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">홈팀 스코어</label>
-                          <input
-                            type="number"
-                            placeholder="예: 8"
-                            value={video.home_score !== null && video.home_score !== undefined ? video.home_score : ''}
-                            onChange={(e) => handleInputChange(video.id, 'home_score', e.target.value === '' ? null : Number(e.target.value))}
-                            className="w-full px-3 py-2 bg-dark-bg border border-white/5 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
-                          />
-                        </div>
-                        <div className="space-y-1 col-span-1">
-                          <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">원정팀 스코어</label>
-                          <input
-                            type="number"
-                            placeholder="예: 5"
-                            value={video.away_score !== null && video.away_score !== undefined ? video.away_score : ''}
-                            onChange={(e) => handleInputChange(video.id, 'away_score', e.target.value === '' ? null : Number(e.target.value))}
-                            className="w-full px-3 py-2 bg-dark-bg border border-white/5 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
-                          />
-                        </div>
-                      </div>
-                      <div className="pt-2 border-t border-white/5">
-                        <div className="space-y-1 max-w-md">
-                          <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">승리 팀 이름 (선택)</label>
-                          <input
-                            type="text"
-                            placeholder="예: 구구불독스 (입력 안하면 스코어 비교 후 자동 표기, 무승부 시 '무승부' 입력)"
-                            value={video.win_team || ''}
-                            onChange={(e) => handleInputChange(video.id, 'win_team', e.target.value)}
-                            className="w-full px-3 py-2 bg-dark-bg border border-white/5 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
-                          />
-                        </div>
-                      </div>
+                    <div className="bg-white/5 p-4 rounded-2xl border border-white/5 space-y-3">
+                      <h5 className="text-xs font-bold text-gray-400">📊 경기 결과 입력 (상대팀 및 스코어)</h5>
+                      
+                      {(() => {
+                        const isBulldogsHome = video.home_team === '구구불독스';
+                        const bulldogsPos = isBulldogsHome ? 'home' : 'away';
+                        const bulldogsScore = isBulldogsHome ? (video.home_score !== null ? video.home_score : '') : (video.away_score !== null ? video.away_score : '');
+                        const opponentScore = isBulldogsHome ? (video.away_score !== null ? video.away_score : '') : (video.home_score !== null ? video.home_score : '');
+                        const opponentName = video.opponent || '';
+
+                        return (
+                          <div className="space-y-3">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                              {/* 1. Opponent Team Name */}
+                              <div className="space-y-1 sm:col-span-1">
+                                <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">상대팀 이름</label>
+                                <input
+                                  type="text"
+                                  placeholder="예: 마포자이언츠"
+                                  value={opponentName}
+                                  onChange={(e) => handleGameResultChange(video.id, 'opponent', e.target.value, video)}
+                                  className="w-full px-3 py-2 bg-dark-bg border border-white/5 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
+                                />
+                              </div>
+
+                              {/* 2. Bulldogs position (Home/Away) */}
+                              <div className="space-y-1 sm:col-span-1">
+                                <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">구구불독스 위치</label>
+                                <select
+                                  value={bulldogsPos}
+                                  onChange={(e) => handleGameResultChange(video.id, 'position', e.target.value, video)}
+                                  className="w-full px-3 py-2.5 bg-dark-bg border border-white/5 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
+                                >
+                                  <option value="away">원정 (선공)</option>
+                                  <option value="home">홈 (후공)</option>
+                                </select>
+                              </div>
+
+                              {/* 3. Scores */}
+                              <div className="grid grid-cols-2 gap-3 sm:col-span-1">
+                                <div className="space-y-1">
+                                  <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">불독스 점수</label>
+                                  <input
+                                    type="number"
+                                    placeholder="예: 8"
+                                    value={bulldogsScore}
+                                    onChange={(e) => handleGameResultChange(video.id, 'bulldogs_score', e.target.value, video)}
+                                    className="w-full px-3 py-2 bg-dark-bg border border-white/5 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
+                                  />
+                                </div>
+                                <div className="space-y-1">
+                                  <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">상대팀 점수</label>
+                                  <input
+                                    type="number"
+                                    placeholder="예: 5"
+                                    value={opponentScore}
+                                    onChange={(e) => handleGameResultChange(video.id, 'opponent_score', e.target.value, video)}
+                                    className="w-full px-3 py-2 bg-dark-bg border border-white/5 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="pt-2 border-t border-white/5">
+                              <div className="space-y-1 max-w-md">
+                                <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">승리 팀 이름 (점수 입력 시 자동 계산)</label>
+                                <input
+                                  type="text"
+                                  placeholder="예: 구구불독스 (점수 입력 시 자동 입력되며, 변경 가능)"
+                                  value={video.win_team || ''}
+                                  onChange={(e) => handleGameResultChange(video.id, 'win_team', e.target.value, video)}
+                                  className="w-full px-3 py-2 bg-dark-bg border border-white/5 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })()}
                     </div>
 
                     {/* Action buttons */}
