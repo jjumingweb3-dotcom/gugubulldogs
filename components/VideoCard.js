@@ -9,6 +9,8 @@ export default function VideoCard({ video, onClick }) {
       case '새싹부':
         return 'bg-lime-950/40 text-lime-400 border-lime-500/30';
       case '꿈나무부':
+      case '꿈나무A':
+      case '꿈나무B':
         return 'bg-amber-950/40 text-amber-400 border-amber-500/30';
       case '유소년부':
         return 'bg-blue-950/40 text-blue-400 border-blue-500/30';

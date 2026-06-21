@@ -35,8 +35,12 @@ export default function PlaybookContainer({ initialVideos, initialTournaments = 
   const videoCounts = useMemo(() => {
     const counts = { 전체: initialVideos.length, 새싹부: 0, 꿈나무부: 0, 유소년부: 0 };
     initialVideos.forEach(v => {
-      if (counts[v.team_division] !== undefined) {
-        counts[v.team_division]++;
+      if (v.team_division === '새싹부') {
+        counts.새싹부++;
+      } else if (v.team_division === '꿈나무부' || v.team_division === '꿈나무A' || v.team_division === '꿈나무B') {
+        counts.꿈나무부++;
+      } else if (v.team_division === '유소년부') {
+        counts.유소년부++;
       }
     });
     return counts;
@@ -46,8 +50,14 @@ export default function PlaybookContainer({ initialVideos, initialTournaments = 
   const filteredVideos = useMemo(() => {
     return initialVideos.filter(video => {
       // 1. Division Tab filter
-      if (activeTab !== '전체' && video.team_division !== activeTab) {
-        return false;
+      if (activeTab !== '전체') {
+        if (activeTab === '꿈나무부') {
+          if (video.team_division !== '꿈나무부' && video.team_division !== '꿈나무A' && video.team_division !== '꿈나무B') {
+            return false;
+          }
+        } else if (video.team_division !== activeTab) {
+          return false;
+        }
       }
       
       // 2. Search Query filter

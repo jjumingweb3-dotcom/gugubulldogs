@@ -857,6 +857,8 @@ ALTER TABLE tournaments DISABLE ROW LEVEL SECURITY;`}
                   <option value="미분류">미분류 (대기)</option>
                   <option value="새싹부">새싹부</option>
                   <option value="꿈나무부">꿈나무부</option>
+                  <option value="꿈나무A">꿈나무A</option>
+                  <option value="꿈나무B">꿈나무B</option>
                   <option value="유소년부">유소년부</option>
                 </select>
               </div>
@@ -1071,6 +1073,8 @@ ALTER TABLE tournaments DISABLE ROW LEVEL SECURITY;`}
                           <option value="미분류">미분류 (대기)</option>
                           <option value="새싹부">새싹부</option>
                           <option value="꿈나무부">꿈나무부</option>
+                          <option value="꿈나무A">꿈나무A</option>
+                          <option value="꿈나무B">꿈나무B</option>
                           <option value="유소년부">유소년부</option>
                         </select>
                       </div>

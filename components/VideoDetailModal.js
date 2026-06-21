@@ -10,6 +10,8 @@ export default function VideoDetailModal({ video, onClose }) {
       case '새싹부':
         return 'bg-lime-950/50 text-lime-400 border-lime-500/25';
       case '꿈나무부':
+      case '꿈나무A':
+      case '꿈나무B':
         return 'bg-amber-950/50 text-amber-400 border-amber-500/25';
       case '유소년부':
         return 'bg-blue-950/50 text-blue-400 border-blue-500/25';
@@ -17,6 +19,19 @@ export default function VideoDetailModal({ video, onClose }) {
         return 'bg-gray-850/50 text-gray-400 border-gray-500/20';
     }
   };
+
+  // Derive home and away display names
+  let homeTeamName = video.home_team?.trim() || '구구불독스';
+  let awayTeamName = video.away_team?.trim() || video.opponent?.trim() || '상대팀';
+
+  if (video.team_division && video.team_division !== '미분류') {
+    if (homeTeamName === '구구불독스') {
+      homeTeamName = video.team_division;
+    }
+    if (awayTeamName === '구구불독스') {
+      awayTeamName = video.team_division;
+    }
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4">
@@ -74,8 +89,8 @@ export default function VideoDetailModal({ video, onClose }) {
               {/* Away (Visitor, Left) */}
               <div className="space-y-1 w-1/3">
                 <div className="text-[10px] text-gray-500 font-bold">원정팀 (초)</div>
-                <div className="text-sm font-semibold text-gray-300 truncate" title={video.away_team || video.opponent || '상대팀'}>
-                  {video.away_team || video.opponent || '상대팀'}
+                <div className="text-sm font-semibold text-gray-300 truncate" title={awayTeamName}>
+                  {awayTeamName}
                 </div>
               </div>
               
@@ -103,8 +118,8 @@ export default function VideoDetailModal({ video, onClose }) {
               {/* Home (Right) */}
               <div className="space-y-1 w-1/3">
                 <div className="text-[10px] text-gray-500 font-bold">홈팀 (말)</div>
-                <div className="text-sm font-extrabold text-primary truncate" title={video.home_team || '구구불독스'}>
-                  {video.home_team || (video.team_division && video.team_division !== '미분류' ? `구구불독스 ${video.team_division}` : '구구불독스')}
+                <div className="text-sm font-extrabold text-primary truncate" title={homeTeamName}>
+                  {homeTeamName}
                 </div>
               </div>
             </div>
