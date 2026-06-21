@@ -3,6 +3,39 @@ import { addVideos } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
+// Helper to fetch Open Graph image from a URL
+async function fetchOgImage(url) {
+  try {
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+      },
+      next: { revalidate: 0 }
+    });
+    if (!response.ok) return null;
+    const html = await response.text();
+    
+    // Check og:image meta tag
+    const ogImageMatch = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i) || 
+                         html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i);
+    if (ogImageMatch) {
+      return ogImageMatch[1].trim();
+    }
+    
+    // Check twitter:image meta tag
+    const twitterImageMatch = html.match(/<meta[^>]*name=["']twitter:image["'][^>]*content=["']([^"']+)["']/i) ||
+                              html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*name=["']twitter:image["']/i);
+    if (twitterImageMatch) {
+      return twitterImageMatch[1].trim();
+    }
+    
+    return null;
+  } catch (e) {
+    console.error('Failed to fetch og:image from', url, e);
+    return null;
+  }
+}
+
 // Helper to extract video ID from YouTube or SOOP URL
 function extractVideoId(source, url) {
   if (!url) return '';
@@ -79,9 +112,16 @@ export async function POST(request) {
       ? `https://www.youtube.com/watch?v=${sourceVideoId}`
       : `https://vod.sooplive.co.kr/player/${sourceVideoId}`;
 
-    const thumbnailUrl = source === 'youtube'
-      ? `https://i.ytimg.com/vi/${sourceVideoId}/hqdefault.jpg`
-      : 'https://images.unsplash.com/photo-1530541930197-ff16ac917b0e?w=800'; // Default sports placeholder for SOOP manual add
+    let thumbnailUrl = '';
+    if (source === 'youtube') {
+      thumbnailUrl = `https://i.ytimg.com/vi/${sourceVideoId}/hqdefault.jpg`;
+    } else {
+      const scrapedThumb = await fetchOgImage(finalVideoUrl);
+      thumbnailUrl = scrapedThumb || 'https://images.unsplash.com/photo-1530541930197-ff16ac917b0e?w=800';
+      if (thumbnailUrl.startsWith('//')) {
+        thumbnailUrl = `https:${thumbnailUrl}`;
+      }
+    }
 
     const newVideo = {
       source,

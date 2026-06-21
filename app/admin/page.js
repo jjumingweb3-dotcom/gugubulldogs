@@ -35,7 +35,7 @@ export default function AdminPage() {
     team_division: '미분류',
     tournament: '',
     opponent: '',
-    published_at: new Date().toISOString().substring(0, 16), // YYYY-MM-DDTHH:mm
+    published_at: new Date().toISOString().substring(0, 10), // YYYY-MM-DD
     home_team: '',
     away_team: '구구불독스',
     home_score: '',
@@ -245,7 +245,7 @@ export default function AdminPage() {
           team_division: '미분류',
           tournament: '',
           opponent: '',
-          published_at: new Date().toISOString().substring(0, 16),
+          published_at: new Date().toISOString().substring(0, 10), // YYYY-MM-DD
           home_team: '',
           away_team: '구구불독스',
           home_score: '',
@@ -928,9 +928,9 @@ ALTER TABLE tournaments DISABLE ROW LEVEL SECURITY;`}
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">경기 시간대</label>
+                <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">경기 일자</label>
                 <input
-                  type="datetime-local"
+                  type="date"
                   value={newVideo.published_at}
                   onChange={(e) => handleNewVideoInputChange('published_at', e.target.value)}
                   className="w-full px-3 py-2 bg-dark-bg border border-white/5 rounded-xl text-xs md:text-sm text-gray-300 outline-none focus:border-primary/20"
@@ -1143,7 +1143,7 @@ ALTER TABLE tournaments DISABLE ROW LEVEL SECURITY;`}
                       />
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       {/* Team select dropdown */}
                       <div className="space-y-1">
                         <div className="flex items-center justify-between">
@@ -1191,6 +1191,17 @@ ALTER TABLE tournaments DISABLE ROW LEVEL SECURITY;`}
                             <option value={video.tournament}>{video.tournament} (직접 입력됨)</option>
                           )}
                         </select>
+                      </div>
+
+                      {/* Game Date field */}
+                      <div className="space-y-1">
+                        <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">경기 일자</label>
+                        <input
+                          type="date"
+                          value={video.published_at ? video.published_at.substring(0, 10) : ''}
+                          onChange={(e) => handleInputChange(video.id, 'published_at', e.target.value)}
+                          className="w-full px-3 py-2.5 bg-dark-bg border border-white/5 rounded-xl text-xs md:text-sm text-gray-300 outline-none focus:border-primary/20"
+                        />
                       </div>
                     </div>
 
