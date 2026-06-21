@@ -21,7 +21,7 @@ function extractOpponent(title) {
 }
 
 // Custom parser to parse YouTube RSS feed XML without external dependencies
-function parseYouTubeRss(xmlText, teamDivision) {
+function parseYouTubeRss(xmlText, teamDivision, cutoffDate = CUTOFF_DATE) {
   const videos = [];
   const entryRegex = /<entry>([\s\S]*?)<\/entry>/g;
   let match;
@@ -40,8 +40,8 @@ function parseYouTubeRss(xmlText, teamDivision) {
       const publishedAtStr = publishedMatch ? publishedMatch[1].trim() : new Date().toISOString();
       const publishedAt = new Date(publishedAtStr);
 
-      // Apply April 2026 date filter
-      if (publishedAt < CUTOFF_DATE) {
+      // Apply date filter
+      if (publishedAt < cutoffDate) {
         continue;
       }
 
@@ -82,7 +82,7 @@ function parseSoopDate(dateStr) {
 }
 
 // Parse SOOP VOD API payload
-function parseSoopVods(vodArray, bjId, teamDivision) {
+function parseSoopVods(vodArray, bjId, teamDivision, cutoffDate = CUTOFF_DATE) {
   const videos = [];
   
   if (!Array.isArray(vodArray)) return videos;
@@ -93,8 +93,8 @@ function parseSoopVods(vodArray, bjId, teamDivision) {
     const regDate = item.reg_date;
     const publishedAt = parseSoopDate(regDate);
 
-    // Apply April 2026 date filter
-    if (publishedAt < CUTOFF_DATE) {
+    // Apply date filter
+    if (publishedAt < cutoffDate) {
       continue;
     }
 
@@ -145,7 +145,21 @@ async function resolveYtChannelId(handle) {
   }
 }
 
-export async function GET() {
+export async function GET(request) {
+  const { searchParams } = new URL(request.url);
+  const yearParam = searchParams.get('year');
+  const monthParam = searchParams.get('month');
+
+  let cutoffDate = CUTOFF_DATE;
+  if (yearParam && monthParam) {
+    const y = parseInt(yearParam, 10);
+    const m = parseInt(monthParam, 10);
+    if (!isNaN(y) && !isNaN(m) && m >= 1 && m <= 12) {
+      const monthStr = String(m).padStart(2, '0');
+      cutoffDate = new Date(`${y}-${monthStr}-01T00:00:00+09:00`);
+    }
+  }
+
   const youtubeHandle = process.env.YOUTUBE_CHANNEL_HANDLE || '@구구불독스유소년야구';
   const youtubeChannelIdOverride = process.env.YOUTUBE_CHANNEL_ID || 'UCDTAqwh48UIZgczSQYTtFHw'; // Fallback verified channel ID
   const soopNewBjId = process.env.SOOP_NEW_BJ_ID || 'pik7688';      // U9 새싹부
@@ -170,7 +184,7 @@ export async function GET() {
       const response = await fetch(rssUrl, { next: { revalidate: 0 } });
       if (response.ok) {
         const xmlText = await response.text();
-        const ytVideos = parseYouTubeRss(xmlText, '꿈나무부');
+        const ytVideos = parseYouTubeRss(xmlText, '꿈나무부', cutoffDate);
         allScrapedVideos = [...allScrapedVideos, ...ytVideos];
         youtubeSuccess = true;
       }
@@ -190,7 +204,7 @@ export async function GET() {
     });
     if (response.ok) {
       const data = await response.json();
-      const soopVideos = parseSoopVods(data.data, soopNewBjId, '새싹부');
+      const soopVideos = parseSoopVods(data.data, soopNewBjId, '새싹부', cutoffDate);
       allScrapedVideos = [...allScrapedVideos, ...soopVideos];
       soopNewSuccess = true;
     }
@@ -209,7 +223,7 @@ export async function GET() {
     });
     if (response.ok) {
       const data = await response.json();
-      const soopVideos = parseSoopVods(data.data, soopOldBjId, '유소년부');
+      const soopVideos = parseSoopVods(data.data, soopOldBjId, '유소년부', cutoffDate);
       allScrapedVideos = [...allScrapedVideos, ...soopVideos];
       soopOldSuccess = true;
     }

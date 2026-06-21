@@ -22,6 +22,8 @@ export default function AdminPage() {
   const [showTournamentForm, setShowTournamentForm] = useState(false);
   const [diagnostics, setDiagnostics] = useState(null);
   const [isDiagnosing, setIsDiagnosing] = useState(false);
+  const [syncYear, setSyncYear] = useState('2026');
+  const [syncMonth, setSyncMonth] = useState('6');
 
   // Manual video registration state
   const [showAddForm, setShowAddForm] = useState(false);
@@ -40,14 +42,6 @@ export default function AdminPage() {
     away_score: '',
     win_team: ''
   });
-
-  // Check localStorage for saved credentials
-  useEffect(() => {
-    const savedPassword = localStorage.getItem('gugu_admin_pw');
-    if (savedPassword) {
-      handleLogin(savedPassword);
-    }
-  }, []);
 
   const handleLogin = async (pwToTry) => {
     const pw = pwToTry || password;
@@ -82,6 +76,16 @@ export default function AdminPage() {
     }
   };
 
+  // Check localStorage for saved credentials
+  useEffect(() => {
+    const savedPassword = localStorage.getItem('gugu_admin_pw');
+    if (savedPassword) {
+      // eslint-disable-next-line
+      handleLogin(savedPassword);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleLogout = () => {
     localStorage.removeItem('gugu_admin_pw');
     setIsAuthenticated(false);
@@ -96,7 +100,7 @@ export default function AdminPage() {
     const savedPassword = localStorage.getItem('gugu_admin_pw');
     
     try {
-      const res = await fetch('/api/cron');
+      const res = await fetch(`/api/cron?year=${syncYear}&month=${syncMonth}`);
       const data = await res.json();
       if (res.ok && data.success) {
         setMessage(data.message || '업데이트가 완료되었습니다.');
@@ -341,15 +345,45 @@ export default function AdminPage() {
 
   const handleInputChange = (id, field, value) => {
     setVideos(prev =>
-      prev.map(v => (v.id === id ? { ...v, [field]: value } : v))
+      prev.map(v => {
+        if (v.id !== id) return v;
+        let updated = { ...v, [field]: value };
+        
+        // If division changes, automatically update win_team if bulldogs won
+        if (field === 'team_division') {
+          const isBulldogsHome = v.home_team === '구구불독스';
+          const bulldogsScore = isBulldogsHome ? v.home_score : v.away_score;
+          const opponentScore = isBulldogsHome ? v.away_score : v.home_score;
+          
+          if (bulldogsScore !== null && opponentScore !== null && bulldogsScore > opponentScore) {
+            const bulldogsTeamName = (value && value !== '미분류') ? value : '구구불독스';
+            updated.win_team = bulldogsTeamName;
+          }
+        }
+        
+        return updated;
+      })
     );
   };
 
   const handleNewVideoInputChange = (field, value) => {
-    setNewVideo(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    setNewVideo(prev => {
+      let updated = { ...prev, [field]: value };
+      
+      // If division changes, automatically update win_team if bulldogs won
+      if (field === 'team_division') {
+        const isBulldogsHome = newVideoBulldogsPos === 'home';
+        const bulldogsScore = isBulldogsHome ? prev.home_score : prev.away_score;
+        const opponentScore = isBulldogsHome ? prev.away_score : prev.home_score;
+        
+        if (bulldogsScore !== '' && opponentScore !== '' && bulldogsScore !== null && opponentScore !== null && Number(bulldogsScore) > Number(opponentScore)) {
+          const bulldogsTeamName = (value && value !== '미분류') ? value : '구구불독스';
+          updated.win_team = bulldogsTeamName;
+        }
+      }
+      
+      return updated;
+    });
   };
 
   const handleNewVideoGameResultChange = (field, value) => {
@@ -396,8 +430,9 @@ export default function AdminPage() {
 
       if (field !== 'win_team') {
         if (bulldogsScore !== '' && opponentScore !== '' && bulldogsScore !== null && opponentScore !== null) {
+          const bulldogsTeamName = (prev.team_division && prev.team_division !== '미분류') ? prev.team_division : '구구불독스';
           if (Number(bulldogsScore) > Number(opponentScore)) {
-            winTeam = '구구불독스';
+            winTeam = bulldogsTeamName;
           } else if (Number(opponentScore) > Number(bulldogsScore)) {
             winTeam = opponent;
           } else {
@@ -459,8 +494,9 @@ export default function AdminPage() {
 
     if (field !== 'win_team') {
       if (bulldogsScore !== null && opponentScore !== null) {
+        const bulldogsTeamName = (currentVideo.team_division && currentVideo.team_division !== '미분류') ? currentVideo.team_division : '구구불독스';
         if (bulldogsScore > opponentScore) {
-          winTeam = '구구불독스';
+          winTeam = bulldogsTeamName;
         } else if (opponentScore > bulldogsScore) {
           winTeam = opponent;
         } else {
@@ -579,6 +615,27 @@ export default function AdminPage() {
           </div>
 
           <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 bg-white/5 border border-white/5 rounded-xl px-2.5 py-1.5 text-xs text-gray-300">
+              <select
+                value={syncYear}
+                onChange={(e) => setSyncYear(e.target.value)}
+                className="bg-slate-800 border border-white/10 text-white font-semibold outline-none cursor-pointer rounded-lg px-2 py-0.5 text-[11px] hover:bg-slate-700 transition-colors"
+              >
+                <option value="2024" style={{ backgroundColor: '#1e293b', color: '#ffffff' }}>2024년</option>
+                <option value="2025" style={{ backgroundColor: '#1e293b', color: '#ffffff' }}>2025년</option>
+                <option value="2026" style={{ backgroundColor: '#1e293b', color: '#ffffff' }}>2026년</option>
+              </select>
+              <select
+                value={syncMonth}
+                onChange={(e) => setSyncMonth(e.target.value)}
+                className="bg-slate-800 border border-white/10 text-white font-semibold outline-none cursor-pointer rounded-lg px-2 py-0.5 text-[11px] hover:bg-slate-700 transition-colors"
+              >
+                {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                  <option key={m} value={m} style={{ backgroundColor: '#1e293b', color: '#ffffff' }}>{m}월</option>
+                ))}
+              </select>
+              <span className="text-[10px] text-gray-400 font-medium hidden xs:inline">이후</span>
+            </div>
             <button
               onClick={handleSyncVideos}
               disabled={isRefreshing}
