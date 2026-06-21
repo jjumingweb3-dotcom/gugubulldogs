@@ -15,6 +15,12 @@ export default function AdminPage() {
   const [message, setMessage] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  // Tournament list states
+  const [tournaments, setTournaments] = useState([]);
+  const [newTournamentName, setNewTournamentName] = useState('');
+  const [isAddingTournament, setIsAddingTournament] = useState(false);
+  const [showTournamentForm, setShowTournamentForm] = useState(false);
+
   // Manual video registration state
   const [showAddForm, setShowAddForm] = useState(false);
   const [newVideo, setNewVideo] = useState({
@@ -59,6 +65,7 @@ export default function AdminPage() {
       if (res.ok && data.success) {
         setIsAuthenticated(true);
         setVideos(data.videos);
+        setTournaments(data.tournaments || []);
         localStorage.setItem('gugu_admin_pw', pw);
         setPassword('');
       } else {
@@ -101,6 +108,77 @@ export default function AdminPage() {
       setError('비디오 수집에 실패했습니다.');
     } finally {
       setIsRefreshing(false);
+    }
+  };
+
+  const handleAddTournament = async (e) => {
+    e.preventDefault();
+    if (!newTournamentName.trim()) return;
+
+    setIsAddingTournament(true);
+    setMessage('');
+    setError('');
+    const savedPassword = localStorage.getItem('gugu_admin_pw');
+
+    try {
+      const res = await fetch('/api/admin/tournaments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          password: savedPassword,
+          name: newTournamentName
+        })
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        setMessage('새로운 대회가 목록에 추가되었습니다.');
+        setNewTournamentName('');
+        if (savedPassword) {
+          handleLogin(savedPassword);
+        }
+      } else {
+        setError(data.error || '대회 추가에 실패했습니다.');
+      }
+    } catch (e) {
+      console.error(e);
+      setError('서버 통신 오류');
+    } finally {
+      setIsAddingTournament(false);
+    }
+  };
+
+  const handleDeleteTournament = async (name) => {
+    if (!confirm(`'${name}' 대회를 목록에서 삭제하시겠습니까?`)) return;
+
+    setMessage('');
+    setError('');
+    const savedPassword = localStorage.getItem('gugu_admin_pw');
+
+    try {
+      const res = await fetch('/api/admin/tournaments', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          password: savedPassword,
+          name: name
+        })
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        setMessage('대회가 성공적으로 제거되었습니다.');
+        if (savedPassword) {
+          handleLogin(savedPassword);
+        }
+      } else {
+        setError(data.error || '대회 삭제에 실패했습니다.');
+      }
+    } catch (e) {
+      console.error(e);
+      setError('서버 통신 오류');
     }
   };
 
@@ -349,32 +427,104 @@ export default function AdminPage() {
         )}
 
         {/* Action Controls (Manual Add Toggle) */}
-        <div className="flex justify-between items-center bg-white/5 border border-white/5 p-4 rounded-3xl">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/5 border border-white/5 p-4 rounded-3xl">
           <div className="space-y-1">
             <h3 className="text-sm md:text-base font-extrabold text-white">경기 영상 데이터 관리</h3>
-            <p className="text-xs text-gray-500">영상을 추가 수기 등록하거나 분류 메타데이터를 편집합니다.</p>
+            <p className="text-xs text-gray-500">영상을 추가 수기 등록하거나 대회명 관리, 분류 메타데이터를 편집합니다.</p>
           </div>
-          <button
-            onClick={() => setShowAddForm(!showAddForm)}
-            className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl font-bold text-xs md:text-sm transition-all duration-300 shadow-md active:scale-95 ${
-              showAddForm
-                ? 'bg-red-950/40 border border-red-500/25 text-red-400'
-                : 'bg-primary text-dark-bg hover:bg-primary-hover shadow-primary/10'
-            }`}
-          >
-            {showAddForm ? (
-              <>
-                <X className="w-4 h-4" />
-                닫기
-              </>
-            ) : (
-              <>
-                <Plus className="w-4 h-4" />
-                새 영상 수기 등록
-              </>
-            )}
-          </button>
+          <div className="flex gap-2 shrink-0">
+            {/* Tournament List Management Button */}
+            <button
+              onClick={() => {
+                setShowTournamentForm(!showTournamentForm);
+                setShowAddForm(false);
+              }}
+              className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl font-bold text-xs md:text-sm transition-all duration-300 shadow-md active:scale-95 border ${
+                showTournamentForm
+                  ? 'bg-amber-950/40 border-amber-500/25 text-amber-400'
+                  : 'bg-white/5 border-white/5 text-gray-400 hover:text-gray-200 hover:bg-white/10'
+              }`}
+            >
+              🏆 대회 목록 관리
+            </button>
+            {/* New Video Registration Button */}
+            <button
+              onClick={() => {
+                setShowAddForm(!showAddForm);
+                setShowTournamentForm(false);
+              }}
+              className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl font-bold text-xs md:text-sm transition-all duration-300 shadow-md active:scale-95 border ${
+                showAddForm
+                  ? 'bg-red-950/40 border-red-500/25 text-red-400'
+                  : 'bg-primary border-primary text-dark-bg hover:bg-primary-hover shadow-primary/10'
+              }`}
+            >
+              {showAddForm ? (
+                <>
+                  <X className="w-4 h-4" />
+                  닫기
+                </>
+              ) : (
+                <>
+                  <Plus className="w-4 h-4" />
+                  새 영상 수기 등록
+                </>
+              )}
+            </button>
+          </div>
         </div>
+
+        {/* Tournament Management Form */}
+        {showTournamentForm && (
+          <div className="glass-card p-6 rounded-3xl border border-amber-500/20 space-y-4 animate-fadeIn">
+            <h4 className="text-sm font-extrabold text-amber-400 flex items-center gap-1.5">
+              <span>🏆 대회 목록 관리</span>
+            </h4>
+            
+            {/* Create Tournament Form */}
+            <form onSubmit={handleAddTournament} className="flex gap-2 max-w-md">
+              <input
+                type="text"
+                placeholder="새로운 대회명 입력 (예: 봉황대기 전국대회)"
+                value={newTournamentName}
+                onChange={(e) => setNewTournamentName(e.target.value)}
+                className="flex-grow px-3 py-2 bg-dark-bg border border-white/5 rounded-xl text-xs md:text-sm text-gray-300 outline-none focus:border-primary/20"
+                required
+              />
+              <button
+                type="submit"
+                disabled={isAddingTournament}
+                className="px-4 py-2 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-dark-bg font-bold text-xs md:text-sm rounded-xl transition-all duration-200"
+              >
+                {isAddingTournament ? '추가 중...' : '대회 추가'}
+              </button>
+            </form>
+
+            {/* Tournaments List Grid */}
+            <div className="space-y-2">
+              <span className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">현재 등록된 대회 목록 ({tournaments.length}건)</span>
+              {tournaments.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                  {tournaments.map((t) => (
+                    <div key={t} className="flex items-center justify-between px-3 py-2 bg-white/5 border border-white/5 rounded-xl text-xs md:text-sm text-gray-300">
+                      <span className="truncate pr-2">{t}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteTournament(t)}
+                        className="text-gray-500 hover:text-red-400 p-1 rounded-lg transition-colors"
+                        title="대회명 삭제"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-gray-500">등록된 대회명이 없습니다. 대회를 추가해 주세요.</p>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Manual Video Registration Form */}
         {showAddForm && (
@@ -453,13 +603,18 @@ export default function AdminPage() {
 
               <div className="space-y-1">
                 <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">대회명</label>
-                <input
-                  type="text"
-                  placeholder="예: 백호기 전국대회"
-                  value={newVideo.tournament}
+                <select
+                  value={newVideo.tournament || ''}
                   onChange={(e) => handleNewVideoInputChange('tournament', e.target.value)}
-                  className="w-full px-3 py-2 bg-dark-bg border border-white/5 rounded-xl text-xs md:text-sm text-gray-300 outline-none focus:border-primary/20"
-                />
+                  className="w-full px-3 py-2.5 bg-dark-bg border border-white/5 rounded-xl text-xs md:text-sm text-gray-350 outline-none focus:border-primary/20"
+                >
+                  <option value="">대회 없음 (친선/기타)</option>
+                  {tournaments.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="space-y-1">
@@ -652,13 +807,21 @@ export default function AdminPage() {
                       {/* Tournament field */}
                       <div className="space-y-1">
                         <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">대회명</label>
-                        <input
-                          type="text"
-                          placeholder="예: 남양주시장기 리그"
+                        <select
                           value={video.tournament || ''}
                           onChange={(e) => handleInputChange(video.id, 'tournament', e.target.value)}
-                          className="w-full px-3 py-2.5 bg-dark-bg border border-white/5 rounded-xl text-xs md:text-sm text-gray-300 outline-none focus:border-primary/20 transition-colors"
-                        />
+                          className="w-full px-3 py-2.5 bg-dark-bg border border-white/5 rounded-xl text-xs md:text-sm text-gray-300 outline-none focus:border-primary/20"
+                        >
+                          <option value="">대회 없음 (친선/기타)</option>
+                          {tournaments.map((t) => (
+                            <option key={t} value={t}>
+                              {t}
+                            </option>
+                          ))}
+                          {video.tournament && !tournaments.includes(video.tournament) && (
+                            <option value={video.tournament}>{video.tournament} (직접 입력됨)</option>
+                          )}
+                        </select>
                       </div>
 
                       {/* Opponent field */}

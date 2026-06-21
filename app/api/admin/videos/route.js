@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getVideos } from '@/lib/db';
+import { getVideos, getTournaments } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,8 +15,11 @@ export async function POST(request) {
       );
     }
 
-    const videos = await getVideos();
-    return NextResponse.json({ success: true, videos });
+    const [videos, tournaments] = await Promise.all([
+      getVideos(),
+      getTournaments()
+    ]);
+    return NextResponse.json({ success: true, videos, tournaments });
   } catch (e) {
     return NextResponse.json(
       { success: false, error: '데이터를 가져오는데 실패했습니다.' },
