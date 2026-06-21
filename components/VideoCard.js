@@ -14,6 +14,8 @@ export default function VideoCard({ video, onClick }) {
         return 'bg-amber-950/40 text-amber-400 border-amber-500/30';
       case '유소년부':
         return 'bg-blue-950/40 text-blue-400 border-blue-500/30';
+      case '구구불독스':
+        return 'bg-purple-950/40 text-purple-400 border-purple-500/30';
       default:
         return 'bg-gray-850/40 text-gray-400 border-gray-500/20';
     }

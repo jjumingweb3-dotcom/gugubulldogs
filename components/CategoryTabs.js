@@ -6,6 +6,7 @@ export default function CategoryTabs({ activeTab, onTabChange, videoCounts }) {
     { id: '새싹부', label: '새싹부' },
     { id: '꿈나무부', label: '꿈나무부' },
     { id: '유소년부', label: '유소년부' },
+    { id: '구구불독스', label: '구구불독스' },
   ];
 
   return (

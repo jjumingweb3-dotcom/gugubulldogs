@@ -15,6 +15,8 @@ export default function VideoDetailModal({ video, onClose }) {
         return 'bg-amber-950/50 text-amber-400 border-amber-500/25';
       case '유소년부':
         return 'bg-blue-950/50 text-blue-400 border-blue-500/25';
+      case '구구불독스':
+        return 'bg-purple-950/50 text-purple-400 border-purple-500/25';
       default:
         return 'bg-gray-850/50 text-gray-400 border-gray-500/20';
     }

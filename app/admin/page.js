@@ -952,6 +952,7 @@ ALTER TABLE tournaments DISABLE ROW LEVEL SECURITY;`}
                   <option value="꿈나무A">꿈나무A</option>
                   <option value="꿈나무B">꿈나무B</option>
                   <option value="유소년부">유소년부</option>
+                  <option value="구구불독스">구구불독스</option>
                 </select>
               </div>
 
@@ -1168,6 +1169,7 @@ ALTER TABLE tournaments DISABLE ROW LEVEL SECURITY;`}
                           <option value="꿈나무A">꿈나무A</option>
                           <option value="꿈나무B">꿈나무B</option>
                           <option value="유소년부">유소년부</option>
+                          <option value="구구불독스">구구불독스</option>
                         </select>
                       </div>
 

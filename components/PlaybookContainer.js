@@ -33,7 +33,7 @@ export default function PlaybookContainer({ initialVideos, initialTournaments = 
 
   // Video counts for tabs (based on the entire database)
   const videoCounts = useMemo(() => {
-    const counts = { 전체: initialVideos.length, 새싹부: 0, 꿈나무부: 0, 유소년부: 0 };
+    const counts = { 전체: initialVideos.length, 새싹부: 0, 꿈나무부: 0, 유소년부: 0, 구구불독스: 0 };
     initialVideos.forEach(v => {
       if (v.team_division === '새싹부') {
         counts.새싹부++;
@@ -41,6 +41,8 @@ export default function PlaybookContainer({ initialVideos, initialTournaments = 
         counts.꿈나무부++;
       } else if (v.team_division === '유소년부') {
         counts.유소년부++;
+      } else if (v.team_division === '구구불독스') {
+        counts.구구불독스++;
       }
     });
     return counts;
