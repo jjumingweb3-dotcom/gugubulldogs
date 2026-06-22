@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Settings, Play, Youtube, Tv, Calendar, Info } from 'lucide-react';
+import { Settings, Play, Youtube, Tv, Calendar, Info, Music } from 'lucide-react';
 import Link from 'next/link';
 import CategoryTabs from './CategoryTabs';
 import FilterBar from './FilterBar';
@@ -130,6 +130,34 @@ export default function PlaybookContainer({ initialVideos, initialTournaments = 
 
       {/* Main Page Container */}
       <main className="max-w-6xl w-full mx-auto px-4 md:px-8 py-6 flex-grow space-y-6">
+        {/* Cheer Song Banner */}
+        <div className="relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-r from-primary/10 via-purple-500/5 to-transparent p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-lg shadow-primary/5 hover:border-primary/45 transition-all duration-300 group">
+          {/* Decorative background glow */}
+          <div className="absolute top-1/2 left-4 -translate-y-1/2 w-32 h-32 bg-primary/10 rounded-full blur-3xl pointer-events-none group-hover:bg-primary/20 transition-all duration-500" />
+          
+          <div className="flex items-center gap-3.5 z-10">
+            <div className="w-10 h-10 rounded-2xl bg-primary/20 border border-primary/30 flex items-center justify-center text-primary animate-pulse shadow-[0_0_15px_rgba(197,255,26,0.15)] shrink-0">
+              <Music className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="text-sm font-extrabold text-white flex items-center gap-1.5">
+                구구불독스 <span className="text-primary">공식 응원가 모음</span>
+              </h4>
+              <p className="text-[11px] text-gray-400 mt-0.5">선수들의 힘찬 목소리! 응원가 가사와 음악을 지금 확인해 보세요.</p>
+            </div>
+          </div>
+          
+          <a 
+            href="https://youtu.be/Zhrza56Y-mQ?si=eYrzX3FpJIFgPHPB"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="z-10 flex items-center justify-center gap-1.5 px-4.5 py-2.5 rounded-xl bg-primary hover:bg-primary-hover text-dark-bg font-extrabold text-xs md:text-sm shadow-md transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] cursor-pointer whitespace-nowrap"
+          >
+            <span>응원가 보러가기</span>
+            <Play className="w-3.5 h-3.5 fill-current ml-0.5" />
+          </a>
+        </div>
+
         {/* Categories Tab Bar */}
         <div className="space-y-4">
           <div className="flex flex-col gap-3">
