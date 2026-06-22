@@ -3,6 +3,28 @@ import { X, Calendar, Trophy, Users, ExternalLink, Play } from 'lucide-react';
 import { getDisplayTitle, formatDateFull } from '@/lib/utils';
 
 export default function VideoDetailModal({ video, onClose }) {
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    // Push dummy state to browser history when modal opens
+    window.history.pushState({ modal: 'video-detail' }, '');
+
+    const handlePopState = () => {
+      onClose();
+    };
+
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      
+      // If unmounted manually (clicking X or overlay), clear the dummy state
+      if (window.history.state?.modal === 'video-detail') {
+        window.history.back();
+      }
+    };
+  }, [onClose]);
+
   if (!video) return null;
 
   const getDivisionBadgeColor = (division) => {
