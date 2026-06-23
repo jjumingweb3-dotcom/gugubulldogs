@@ -65,6 +65,18 @@ export async function POST(request) {
       diagnostics.tournamentsTable = { success: false, error: e.message };
     }
 
+    // Test deleted_videos table
+    try {
+      const { data, error } = await supabase.from('deleted_videos').select('*').limit(1);
+      if (error) {
+        diagnostics.deletedVideosTable = { success: false, error: error.message, code: error.code };
+      } else {
+        diagnostics.deletedVideosTable = { success: true, count: data.length };
+      }
+    } catch (e) {
+      diagnostics.deletedVideosTable = { success: false, error: e.message };
+    }
+
     // Test inserting to tournaments table
     if (diagnostics.tournamentsTable && diagnostics.tournamentsTable.success) {
       try {

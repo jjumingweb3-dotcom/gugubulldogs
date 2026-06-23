@@ -819,7 +819,7 @@ export default function AdminPage() {
                         )}
                       </div>
 
-                      <div className="flex items-center gap-1.5">
+                       <div className="flex items-center gap-1.5">
                         <span>대회(tournaments) 테이블 상태:</span>
                         {diagnostics.diagnostics.tournamentsTable?.success ? (
                           <span className="text-emerald-400 font-bold">정상</span>
@@ -827,6 +827,27 @@ export default function AdminPage() {
                           <span className="text-red-400 font-bold">오류 ({diagnostics.diagnostics.tournamentsTable?.error})</span>
                         )}
                       </div>
+
+                      <div className="flex items-center gap-1.5">
+                        <span>삭제 추적(deleted_videos) 테이블 상태:</span>
+                        {diagnostics.diagnostics.deletedVideosTable?.success ? (
+                          <span className="text-emerald-400 font-bold">정상</span>
+                        ) : (
+                          <span className="text-red-400 font-bold">오류 ({diagnostics.diagnostics.deletedVideosTable?.error})</span>
+                        )}
+                      </div>
+
+                      {diagnostics.diagnostics.deletedVideosTable?.code === '42P01' && (
+                        <div className="bg-red-955/20 p-3 rounded-lg border border-red-500/15 text-red-300 space-y-1.5 leading-relaxed">
+                          <div><strong>해결 방법 (삭제 추적 테이블 미생성):</strong> Supabase SQL Editor에서 아래 SQL을 실행하여 deleted_videos 테이블을 생성해 주세요.</div>
+                          <pre className="p-2 bg-black/40 rounded text-[10px] font-mono text-gray-400 overflow-x-auto select-all">
+{`CREATE TABLE IF NOT EXISTS deleted_videos (
+  source_video_id TEXT PRIMARY KEY,
+  created_at TIMESTAMPTZ DEFAULT now()
+);`}
+                          </pre>
+                        </div>
+                      )}
 
                       {diagnostics.diagnostics.tournamentsTable?.code === '42P01' && (
                         <div className="bg-red-955/20 p-3 rounded-lg border border-red-500/15 text-red-300 space-y-1.5 leading-relaxed">
