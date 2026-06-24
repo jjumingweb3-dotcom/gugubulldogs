@@ -570,7 +570,7 @@ export default function AdminPage() {
       <div className="min-h-screen flex items-center justify-center p-4 bg-dark-bg">
         <div className="w-full max-w-md glass p-8 rounded-3xl space-y-6 border border-white/10">
           <div className="text-center space-y-2">
-            <div className="w-12 h-12 bg-primary text-dark-bg rounded-2xl mx-auto flex items-center justify-center font-black text-2xl shadow-[0_0_15px_rgba(197,255,26,0.3)]">
+            <div className="w-12 h-12 bg-primary text-dark-bg rounded-2xl mx-auto flex items-center justify-center font-black text-2xl shadow-[0_0_15px_rgba(59,130,246,0.3)]">
               G
             </div>
             <h1 className="text-xl font-extrabold text-white">플레이북 관리자 로그인</h1>
@@ -605,7 +605,7 @@ export default function AdminPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 rounded-2xl bg-primary hover:bg-primary-hover text-dark-bg font-bold text-sm transition-all duration-300 flex items-center justify-center gap-1.5 shadow-[0_4px_16px_rgba(197,255,26,0.2)] disabled:opacity-50"
+              className="w-full py-3.5 rounded-2xl bg-primary hover:bg-primary-hover text-dark-bg font-bold text-sm transition-all duration-300 flex items-center justify-center gap-1.5 shadow-[0_4px_16px_rgba(59,130,246,0.2)] disabled:opacity-50"
             >
               {loading ? (
                 <>
@@ -636,7 +636,7 @@ export default function AdminPage() {
       <header className="sticky top-0 z-30 w-full glass border-b border-white/5 py-4 px-4 md:px-8">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-dark-bg font-extrabold text-sm shadow-[0_0_10px_rgba(197,255,26,0.3)]">
+            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-dark-bg font-extrabold text-sm shadow-[0_0_10px_rgba(59,130,246,0.3)]">
               ADM
             </div>
             <div>
@@ -814,7 +814,7 @@ export default function AdminPage() {
                     onClick={() => setStatsTab('daily')}
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
                       statsTab === 'daily'
-                        ? 'bg-primary text-dark-bg border-primary shadow-[0_0_10px_rgba(197,255,26,0.2)]'
+                        ? 'bg-primary text-dark-bg border-primary shadow-[0_0_10px_rgba(59,130,246,0.2)]'
                         : 'bg-white/5 border-white/5 text-gray-400 hover:bg-white/10'
                     }`}
                   >
@@ -824,7 +824,7 @@ export default function AdminPage() {
                     onClick={() => setStatsTab('weekly')}
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
                       statsTab === 'weekly'
-                        ? 'bg-primary text-dark-bg border-primary shadow-[0_0_10px_rgba(197,255,26,0.2)]'
+                        ? 'bg-primary text-dark-bg border-primary shadow-[0_0_10px_rgba(59,130,246,0.2)]'
                         : 'bg-white/5 border-white/5 text-gray-400 hover:bg-white/10'
                     }`}
                   >
@@ -834,7 +834,7 @@ export default function AdminPage() {
                     onClick={() => setStatsTab('monthly')}
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
                       statsTab === 'monthly'
-                        ? 'bg-primary text-dark-bg border-primary shadow-[0_0_10px_rgba(197,255,26,0.2)]'
+                        ? 'bg-primary text-dark-bg border-primary shadow-[0_0_10px_rgba(59,130,246,0.2)]'
                         : 'bg-white/5 border-white/5 text-gray-400 hover:bg-white/10'
                     }`}
                   >
@@ -875,7 +875,7 @@ export default function AdminPage() {
                           <div className="flex-grow h-3 bg-white/5 rounded-full overflow-hidden relative">
                             <div
                               style={{ width: `${percentage}%` }}
-                              className="bg-gradient-to-r from-primary/70 to-primary h-full rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(197,255,26,0.2)]"
+                              className="bg-gradient-to-r from-primary/70 to-primary h-full rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(59,130,246,0.2)]"
                             />
                           </div>
                           <span className="w-12 text-right text-xs font-bold text-white shrink-0">

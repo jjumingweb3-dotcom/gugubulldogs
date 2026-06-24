@@ -22,7 +22,7 @@ export default function CategoryTabs({ activeTab, onTabChange, videoCounts }) {
               onClick={() => onTabChange(tab.id)}
               className={`relative px-5 py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-all duration-300 ${
                 isActive
-                  ? 'bg-primary text-dark-bg shadow-[0_4px_16px_rgba(197,255,26,0.25)]'
+                  ? 'bg-primary text-dark-bg shadow-[0_4px_16px_rgba(59,130,246,0.25)]'
                   : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'
               }`}
             >

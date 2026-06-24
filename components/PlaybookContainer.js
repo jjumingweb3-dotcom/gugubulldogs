@@ -145,7 +145,7 @@ export default function PlaybookContainer({ initialVideos, initialTournaments = 
       <header className="sticky top-0 z-30 w-full glass border-b border-white/5 py-4 px-4 md:px-8">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-dark-bg font-black text-lg shadow-[0_0_12px_rgba(197,255,26,0.4)]">
+            <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-dark-bg font-black text-lg shadow-[0_0_12px_rgba(59,130,246,0.4)]">
               G
             </div>
             <div>
@@ -215,7 +215,7 @@ export default function PlaybookContainer({ initialVideos, initialTournaments = 
                   onClick={() => setSelectedTournament('')}
                   className={`px-3.5 py-2 rounded-xl text-xs md:text-sm font-semibold whitespace-nowrap border transition-all duration-200 cursor-pointer ${
                     !selectedTournament
-                      ? 'bg-primary text-dark-bg border-primary shadow-[0_0_10px_rgba(197,255,26,0.2)]'
+                      ? 'bg-primary text-dark-bg border-primary shadow-[0_0_10px_rgba(59,130,246,0.2)]'
                       : 'bg-white/5 border-white/5 text-gray-400 hover:text-gray-200 hover:bg-white/10'
                   }`}
                 >
@@ -229,7 +229,7 @@ export default function PlaybookContainer({ initialVideos, initialTournaments = 
                       onClick={() => setSelectedTournament(selectedTournament === t ? '' : t)}
                       className={`px-3.5 py-2 rounded-xl text-xs md:text-sm font-semibold whitespace-nowrap border transition-all duration-200 cursor-pointer ${
                         selectedTournament === t
-                          ? 'bg-primary text-dark-bg border-primary shadow-[0_0_10px_rgba(197,255,26,0.2)]'
+                          ? 'bg-primary text-dark-bg border-primary shadow-[0_0_10px_rgba(59,130,246,0.2)]'
                           : 'bg-white/5 border-white/5 text-gray-400 hover:text-gray-200 hover:bg-white/10'
                       }`}
                     >
@@ -249,7 +249,7 @@ export default function PlaybookContainer({ initialVideos, initialTournaments = 
                     onClick={() => setSelectedTournament('')}
                     className={`px-3.5 py-2 rounded-xl text-xs md:text-sm font-semibold whitespace-nowrap border transition-all duration-200 cursor-pointer shrink-0 ${
                       !selectedTournament
-                        ? 'bg-primary text-dark-bg border-primary shadow-[0_0_10px_rgba(197,255,26,0.2)]'
+                        ? 'bg-primary text-dark-bg border-primary shadow-[0_0_10px_rgba(59,130,246,0.2)]'
                         : 'bg-white/5 border-white/5 text-gray-400 hover:text-gray-200 hover:bg-white/10'
                     }`}
                   >
@@ -263,7 +263,7 @@ export default function PlaybookContainer({ initialVideos, initialTournaments = 
                         onClick={() => setSelectedTournament(selectedTournament === t ? '' : t)}
                         className={`px-3.5 py-2 rounded-xl text-xs md:text-sm font-semibold whitespace-nowrap border transition-all duration-200 cursor-pointer shrink-0 ${
                           selectedTournament === t
-                            ? 'bg-primary text-dark-bg border-primary shadow-[0_0_10px_rgba(197,255,26,0.2)]'
+                            ? 'bg-primary text-dark-bg border-primary shadow-[0_0_10px_rgba(59,130,246,0.2)]'
                             : 'bg-white/5 border-white/5 text-gray-400 hover:text-gray-200 hover:bg-white/10'
                         }`}
                       >
