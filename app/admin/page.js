@@ -573,7 +573,7 @@ export default function AdminPage() {
             <div className="w-12 h-12 bg-primary text-dark-bg rounded-2xl mx-auto flex items-center justify-center font-black text-2xl shadow-[0_0_15px_rgba(59,130,246,0.3)]">
               G
             </div>
-            <h1 className="text-xl font-extrabold text-white">플레이북 관리자 로그인</h1>
+            <h1 className="text-xl font-extrabold text-gray-100">플레이북 관리자 로그인</h1>
             <p className="text-xs text-gray-500">영상 분류 및 매핑 정보를 관리합니다.</p>
           </div>
 
@@ -591,7 +591,7 @@ export default function AdminPage() {
                 placeholder="비밀번호(로컬 기본값: 1234)"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 bg-white/5 border border-white/5 focus:border-primary/20 focus:bg-white/10 rounded-2xl outline-none text-sm placeholder-gray-600 text-gray-200 transition-all duration-300"
+                className="w-full px-4 py-3 bg-gray-900 border border-gray-800 focus:border-primary/20 focus:bg-gray-950 rounded-2xl outline-none text-sm placeholder-gray-600 text-gray-200 transition-all duration-300"
               />
             </div>
 
@@ -640,7 +640,7 @@ export default function AdminPage() {
               ADM
             </div>
             <div>
-              <h1 className="text-sm md:text-base font-extrabold tracking-tight text-white">
+              <h1 className="text-sm md:text-base font-extrabold tracking-tight text-gray-100">
                 플레이북 <span className="text-primary">관리자 패널</span>
               </h1>
               <p className="text-[10px] text-gray-500">영상 분류 상태 관리</p>
@@ -648,23 +648,23 @@ export default function AdminPage() {
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2 bg-white/5 border border-white/5 rounded-xl px-2.5 py-1.5 text-xs text-gray-300">
+            <div className="flex items-center gap-2 bg-gray-900 border border-gray-800 rounded-xl px-2.5 py-1.5 text-xs text-gray-300">
               <select
                 value={syncYear}
                 onChange={(e) => setSyncYear(e.target.value)}
-                className="bg-slate-800 border border-white/10 text-white font-semibold outline-none cursor-pointer rounded-lg px-2 py-0.5 text-[11px] hover:bg-slate-700 transition-colors"
+                className="bg-slate-800 border border-white/10 text-gray-100 font-semibold outline-none cursor-pointer rounded-lg px-2 py-0.5 text-[11px] hover:bg-slate-700 transition-colors"
               >
-                <option value="2024" style={{ backgroundColor: '#1e293b', color: '#ffffff' }}>2024년</option>
-                <option value="2025" style={{ backgroundColor: '#1e293b', color: '#ffffff' }}>2025년</option>
-                <option value="2026" style={{ backgroundColor: '#1e293b', color: '#ffffff' }}>2026년</option>
+                <option value="2024" style={{ backgroundColor: '#ffffff', color: '#0f172a' }}>2024년</option>
+                <option value="2025" style={{ backgroundColor: '#ffffff', color: '#0f172a' }}>2025년</option>
+                <option value="2026" style={{ backgroundColor: '#ffffff', color: '#0f172a' }}>2026년</option>
               </select>
               <select
                 value={syncMonth}
                 onChange={(e) => setSyncMonth(e.target.value)}
-                className="bg-slate-800 border border-white/10 text-white font-semibold outline-none cursor-pointer rounded-lg px-2 py-0.5 text-[11px] hover:bg-slate-700 transition-colors"
+                className="bg-slate-800 border border-white/10 text-gray-100 font-semibold outline-none cursor-pointer rounded-lg px-2 py-0.5 text-[11px] hover:bg-slate-700 transition-colors"
               >
                 {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-                  <option key={m} value={m} style={{ backgroundColor: '#1e293b', color: '#ffffff' }}>{m}월</option>
+                  <option key={m} value={m} style={{ backgroundColor: '#ffffff', color: '#0f172a' }}>{m}월</option>
                 ))}
               </select>
               <span className="text-[10px] text-gray-400 font-medium hidden xs:inline">이후</span>
@@ -680,7 +680,7 @@ export default function AdminPage() {
             </button>
             <Link
               href="/"
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 text-xs font-semibold text-gray-400 hover:text-gray-200 transition-all duration-300"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gray-900 border border-gray-800 hover:bg-gray-800 text-xs font-semibold text-gray-400 hover:text-gray-200 transition-all duration-300"
             >
               <Home className="w-3.5 h-3.5" />
               <span>홈으로</span>
@@ -723,7 +723,7 @@ export default function AdminPage() {
               <div className="flex items-center gap-2">
                 <BarChart3 className="w-5 h-5 text-primary" />
                 <div>
-                  <h3 className="text-sm md:text-base font-extrabold text-white">📊 방문자 통계</h3>
+                  <h3 className="text-sm md:text-base font-extrabold text-gray-100">📊 방문자 통계</h3>
                   <p className="text-[10px] text-gray-500">일별, 주별, 월별 방문 분석</p>
                 </div>
               </div>
@@ -782,15 +782,15 @@ export default function AdminPage() {
 
                     return (
                       <>
-                        <div className="bg-white/5 border border-white/5 rounded-2xl p-4 flex flex-col justify-between">
+                        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4 flex flex-col justify-between">
                           <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">누적 방문수 ({periodLabel})</span>
-                          <span className="text-xl font-black text-white mt-1">{total.toLocaleString()}회</span>
+                          <span className="text-xl font-black text-gray-100 mt-1">{total.toLocaleString()}회</span>
                         </div>
-                        <div className="bg-white/5 border border-white/5 rounded-2xl p-4 flex flex-col justify-between">
+                        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4 flex flex-col justify-between">
                           <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">평균 방문수</span>
                           <span className="text-xl font-black text-primary mt-1">{avg}회</span>
                         </div>
-                        <div className="bg-white/5 border border-white/5 rounded-2xl p-4 flex flex-col justify-between">
+                        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4 flex flex-col justify-between">
                           {todayCount !== null ? (
                             <>
                               <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">오늘 방문수</span>
@@ -815,7 +815,7 @@ export default function AdminPage() {
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
                       statsTab === 'daily'
                         ? 'bg-primary text-dark-bg border-primary shadow-[0_0_10px_rgba(59,130,246,0.2)]'
-                        : 'bg-white/5 border-white/5 text-gray-400 hover:bg-white/10'
+                        : 'bg-gray-900 border-gray-800 text-gray-400 hover:bg-gray-800'
                     }`}
                   >
                     일별 (최근 30일)
@@ -825,7 +825,7 @@ export default function AdminPage() {
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
                       statsTab === 'weekly'
                         ? 'bg-primary text-dark-bg border-primary shadow-[0_0_10px_rgba(59,130,246,0.2)]'
-                        : 'bg-white/5 border-white/5 text-gray-400 hover:bg-white/10'
+                        : 'bg-gray-900 border-gray-800 text-gray-400 hover:bg-gray-800'
                     }`}
                   >
                     주별 (최근 12주)
@@ -835,7 +835,7 @@ export default function AdminPage() {
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
                       statsTab === 'monthly'
                         ? 'bg-primary text-dark-bg border-primary shadow-[0_0_10px_rgba(59,130,246,0.2)]'
-                        : 'bg-white/5 border-white/5 text-gray-400 hover:bg-white/10'
+                        : 'bg-gray-900 border-gray-800 text-gray-400 hover:bg-gray-800'
                     }`}
                   >
                     월별 (최근 12개월)
@@ -868,17 +868,17 @@ export default function AdminPage() {
                       }
 
                       return (
-                        <div key={item.date} className="flex items-center gap-3 hover:bg-white/5 px-2 py-1.5 rounded-xl transition-colors group">
+                        <div key={item.date} className="flex items-center gap-3 hover:bg-gray-900 px-2 py-1.5 rounded-xl transition-colors group">
                           <span className="w-14 text-xs font-semibold text-gray-400 group-hover:text-gray-200 transition-colors shrink-0">
                             {displayLabel}
                           </span>
-                          <div className="flex-grow h-3 bg-white/5 rounded-full overflow-hidden relative">
+                          <div className="flex-grow h-3 bg-gray-900 rounded-full overflow-hidden relative">
                             <div
                               style={{ width: `${percentage}%` }}
                               className="bg-gradient-to-r from-primary/70 to-primary h-full rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(59,130,246,0.2)]"
                             />
                           </div>
-                          <span className="w-12 text-right text-xs font-bold text-white shrink-0">
+                          <span className="w-12 text-right text-xs font-bold text-gray-100 shrink-0">
                             {item.count}회
                           </span>
                         </div>
@@ -894,7 +894,7 @@ export default function AdminPage() {
         {/* Action Controls (Manual Add Toggle) */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/5 border border-white/5 p-4 rounded-3xl">
           <div className="space-y-1">
-            <h3 className="text-sm md:text-base font-extrabold text-white">경기 영상 데이터 관리</h3>
+            <h3 className="text-sm md:text-base font-extrabold text-gray-100">경기 영상 데이터 관리</h3>
             <p className="text-xs text-gray-500">영상을 추가 수기 등록하거나 대회명 관리, 분류 메타데이터를 편집합니다.</p>
           </div>
           <div className="flex gap-2 shrink-0">
@@ -1008,7 +1008,7 @@ export default function AdminPage() {
                   <h5 className="font-extrabold text-amber-400">🔍 진단 리포트</h5>
                   
                   <div className="space-y-1">
-                    <div>실행 모드: <strong className="text-white">{diagnostics.mode === 'supabase' ? 'Supabase 연동 모드' : '로컬 파일 모드'}</strong></div>
+                    <div>실행 모드: <strong className="text-gray-100">{diagnostics.mode === 'supabase' ? 'Supabase 연동 모드' : '로컬 파일 모드'}</strong></div>
                     {diagnostics.mode === 'local-file' && (
                       <div className="text-amber-500 bg-amber-950/20 p-2.5 rounded-lg border border-amber-500/15 leading-relaxed">
                         ⚠️ 현재 로컬 파일 데이터베이스 모드입니다. Vercel 배포 환경에서는 서버리스 파일 쓰기가 불가능하므로, Vercel 환경 변수설정에 <strong>SUPABASE_URL</strong>과 <strong>SUPABASE_ANON_KEY</strong>(또는 <strong>SUPABASE_SERVICE_KEY</strong>)를 올바르게 입력하셔야 대회 추가/삭제가 작동합니다.

@@ -102,7 +102,7 @@ export default function VideoDetailModal({ video, onClose }) {
             <span className={`px-2.5 py-1 rounded-lg text-xs font-bold border ${getDivisionBadgeColor(video.team_division)}`}>
               {video.team_division}
             </span>
-            <h2 className="text-lg md:text-xl font-extrabold text-white leading-snug">
+            <h2 className="text-lg md:text-xl font-extrabold text-gray-100 leading-snug">
               {getDisplayTitle(video)}
             </h2>
           </div>
@@ -121,7 +121,7 @@ export default function VideoDetailModal({ video, onClose }) {
               {/* SCORE (Center) */}
               <div className="flex flex-col items-center w-1/3 shrink-0">
                 <div className="text-[9px] text-gray-500 uppercase tracking-widest font-bold">SCORE</div>
-                <div className="text-2xl font-black text-white tracking-wider font-mono">
+                <div className="text-2xl font-black text-gray-100 tracking-wider font-mono">
                   {video.away_score} : {video.home_score}
                 </div>
                 {video.win_team ? (
@@ -150,7 +150,7 @@ export default function VideoDetailModal({ video, onClose }) {
           )}
 
           {/* Details Table */}
-          <div className="bg-white/5 border border-white/5 rounded-2xl p-4 space-y-3.5 text-sm">
+          <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4 space-y-3.5 text-sm">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5 text-gray-400">
                 <Calendar className="w-4 h-4 text-gray-500" />
