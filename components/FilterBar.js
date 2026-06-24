@@ -31,7 +31,7 @@ export default function FilterBar({
             placeholder="대회명, 상대팀, 제목 검색..."
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full pl-10 pr-10 py-3 bg-white/5 border border-white/5 focus:border-primary/30 focus:bg-white/10 rounded-2xl outline-none text-sm placeholder-gray-500 text-gray-200 transition-all duration-300"
+            className="w-full pl-10 pr-10 py-3 bg-gray-900 border border-gray-800 focus:border-primary/30 focus:bg-gray-950 rounded-2xl outline-none text-sm placeholder-gray-500 text-gray-100 transition-all duration-300"
           />
           {searchQuery && (
             <button
@@ -49,7 +49,7 @@ export default function FilterBar({
           className={`flex items-center gap-2 px-4 py-3 rounded-2xl border text-sm font-semibold transition-all duration-300 ${
             isOpen || hasActiveFilters
               ? 'bg-primary/10 border-primary/20 text-primary'
-              : 'bg-white/5 border-white/5 text-gray-400 hover:text-gray-200 hover:bg-white/10'
+              : 'bg-gray-900 border-gray-800 text-gray-400 hover:text-gray-200 hover:bg-gray-800'
           }`}
         >
           <SlidersHorizontal className="w-4 h-4" />
@@ -62,7 +62,7 @@ export default function FilterBar({
 
       {/* Expanded Filters Panel */}
       {isOpen && (
-        <div className="p-4 bg-white/5 border border-white/5 rounded-2xl space-y-4 animate-fadeIn">
+        <div className="p-4 bg-gray-900 border border-gray-800 rounded-2xl space-y-4 animate-fadeIn">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {/* Tournament Selector */}
             <div className="space-y-1.5">
@@ -70,7 +70,7 @@ export default function FilterBar({
               <select
                 value={selectedTournament}
                 onChange={(e) => onTournamentChange(e.target.value)}
-                className="w-full px-3 py-2.5 bg-dark-bg border border-white/5 rounded-xl text-xs md:text-sm text-gray-300 focus:outline-none focus:border-primary/20"
+                className="w-full px-3 py-2.5 bg-gray-950 border border-gray-800 rounded-xl text-xs md:text-sm text-gray-100 focus:outline-none focus:border-primary/20"
               >
                 <option value="">전체 대회</option>
                 {tournaments.map((t) => (
@@ -87,7 +87,7 @@ export default function FilterBar({
               <select
                 value={selectedOpponent}
                 onChange={(e) => onOpponentChange(e.target.value)}
-                className="w-full px-3 py-2.5 bg-dark-bg border border-white/5 rounded-xl text-xs md:text-sm text-gray-300 focus:outline-none focus:border-primary/20"
+                className="w-full px-3 py-2.5 bg-gray-950 border border-gray-800 rounded-xl text-xs md:text-sm text-gray-100 focus:outline-none focus:border-primary/20"
               >
                 <option value="">전체 상대팀</option>
                 {opponents.map((o) => (
@@ -104,7 +104,7 @@ export default function FilterBar({
               <select
                 value={selectedPlatform}
                 onChange={(e) => onPlatformChange(e.target.value)}
-                className="w-full px-3 py-2.5 bg-dark-bg border border-white/5 rounded-xl text-xs md:text-sm text-gray-300 focus:outline-none focus:border-primary/20"
+                className="w-full px-3 py-2.5 bg-gray-950 border border-gray-800 rounded-xl text-xs md:text-sm text-gray-100 focus:outline-none focus:border-primary/20"
               >
                 <option value="">모든 플랫폼</option>
                 <option value="youtube">YouTube</option>

@@ -1,18 +1,31 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #3b82f6;
-  --color-primary-hover: #2563eb;
-  --color-dark-bg: #090b0e;
-  --color-card-bg: rgba(22, 28, 38, 0.6);
-  --color-card-border: rgba(255, 255, 255, 0.07);
-  --color-glass-bg: rgba(15, 20, 30, 0.75);
-  --color-glass-border: rgba(255, 255, 255, 0.05);
+  --color-primary: #2563eb;
+  --color-primary-hover: #1d4ed8;
+  --color-dark-bg: #f8fafc;
+  --color-card-bg: #ffffff;
+  --color-card-border: rgba(15, 23, 42, 0.08);
+  --color-glass-bg: rgba(255, 255, 255, 0.85);
+  --color-glass-border: rgba(15, 23, 42, 0.06);
+
+  /* Reverse gray scale for light theme inversion */
+  --color-gray-50: #0f172a;
+  --color-gray-100: #1e293b;
+  --color-gray-200: #334155;
+  --color-gray-300: #475569;
+  --color-gray-400: #64748b;
+  --color-gray-500: #94a3b8;
+  --color-gray-600: #cbd5e1;
+  --color-gray-700: #e2e8f0;
+  --color-gray-800: #f1f5f9;
+  --color-gray-900: #f8fafc;
+  --color-gray-950: #ffffff;
 }
 
 :root {
-  --background: #090b0e;
-  --foreground: #f3f4f6;
+  --background: #f8fafc;
+  --foreground: #0f172a;
 }
 
 body {
@@ -20,55 +33,55 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
   background-image: 
-    radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.04) 0%, transparent 40%),
-    radial-gradient(circle at 90% 80%, rgba(59, 130, 246, 0.03) 0%, transparent 40%);
+    radial-gradient(circle at 10% 20%, rgba(37, 99, 235, 0.03) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(37, 99, 235, 0.02) 0%, transparent 40%);
   background-attachment: fixed;
   overflow-x: hidden;
 }
 
-/* Custom premium scrollbar */
+/* Custom premium scrollbar for light theme */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: rgba(15, 17, 21, 0.5);
+  background: #f1f5f9;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
+  background: #cbd5e1;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #3b82f6;
+  background: var(--color-primary);
 }
 
-/* Glassmorphism helpers */
+/* Glassmorphism helpers configured for light theme */
 .glass {
-  background: rgba(15, 20, 30, 0.75);
+  background: var(--color-glass-bg);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--color-glass-border);
 }
 
 .glass-card {
-  background: rgba(22, 28, 38, 0.6);
+  background: var(--color-card-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--color-card-border);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .glass-card:hover {
-  border-color: rgba(59, 130, 246, 0.25);
-  box-shadow: 0 10px 30px -10px rgba(59, 130, 246, 0.1);
+  border-color: rgba(37, 99, 235, 0.2);
+  box-shadow: 0 10px 30px -10px rgba(37, 99, 235, 0.08);
   transform: translateY(-2px);
 }
 
 /* Tab indicator animation helper */
 .tab-active {
-  color: #090b0e;
-  background-color: #3b82f6;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+  color: #ffffff !important;
+  background-color: var(--color-primary);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
 }
 
 /* Hide scrollbar for CategoryTabs horizontal slider */

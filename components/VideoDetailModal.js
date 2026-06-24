@@ -30,17 +30,17 @@ export default function VideoDetailModal({ video, onClose }) {
   const getDivisionBadgeColor = (division) => {
     switch (division) {
       case '새싹부':
-        return 'bg-lime-950/50 text-lime-400 border-lime-500/25';
+        return 'bg-lime-50 text-lime-700 border-lime-200';
       case '꿈나무부':
       case '꿈나무A':
       case '꿈나무B':
-        return 'bg-amber-950/50 text-amber-400 border-amber-500/25';
+        return 'bg-amber-50 text-amber-700 border-amber-200';
       case '유소년부':
-        return 'bg-blue-950/50 text-blue-400 border-blue-500/25';
+        return 'bg-blue-50 text-blue-700 border-blue-200';
       case '구구불독스':
-        return 'bg-purple-950/50 text-purple-400 border-purple-500/25';
+        return 'bg-purple-50 text-purple-700 border-purple-200';
       default:
-        return 'bg-gray-850/50 text-gray-400 border-gray-500/20';
+        return 'bg-slate-50 text-slate-700 border-slate-200';
     }
   };
 
@@ -130,7 +130,7 @@ export default function VideoDetailModal({ video, onClose }) {
                   </span>
                 ) : (
                   Number(video.home_score) === Number(video.away_score) ? (
-                    <span className="text-[9px] bg-white/10 text-gray-300 px-1.5 py-0.5 rounded font-extrabold mt-1">무승부</span>
+                    <span className="text-[9px] bg-gray-800 text-gray-300 px-1.5 py-0.5 rounded font-extrabold mt-1">무승부</span>
                   ) : (
                     <span className="text-[9px] bg-primary/25 text-primary px-1.5 py-0.5 rounded font-extrabold mt-1">
                       {Number(video.home_score) > Number(video.away_score) ? '홈팀 승' : '원정팀 승'}
