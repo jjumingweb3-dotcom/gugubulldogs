@@ -29,22 +29,44 @@ export default function PlaybookContainer({ initialVideos, initialTournaments = 
 
   // Client-side states for search and filtering
   const [activeTab, setActiveTab] = useState('전체');
+  const [isTournamentExpanded, setIsTournamentExpanded] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTournament, setSelectedTournament] = useState('');
   const [selectedOpponent, setSelectedOpponent] = useState('');
   const [selectedPlatform, setSelectedPlatform] = useState('');
   const [selectedVideo, setSelectedVideo] = useState(null);
 
-  // Combine managed tournaments and tournaments from videos
+  // Combine managed tournaments and tournaments from videos, sorted by most recent video published date
   const { tournaments, opponents } = useMemo(() => {
-    const tourns = new Set(initialTournaments);
     const opps = new Set();
     initialVideos.forEach(v => {
-      if (v.tournament) tourns.add(v.tournament);
       if (v.opponent) opps.add(v.opponent);
     });
+
+    // 1. Gather all tournaments that actually have videos, in order of their video published date (since initialVideos is sorted desc)
+    const activeTournaments = [];
+    const seenActive = new Set();
+    initialVideos.forEach(v => {
+      if (v.tournament && !seenActive.has(v.tournament)) {
+        seenActive.add(v.tournament);
+        activeTournaments.push(v.tournament);
+      }
+    });
+
+    // 2. Gather all tournaments from initialTournaments that do NOT have any videos, sorted alphabetically
+    const inactiveTournaments = [];
+    initialTournaments.forEach(t => {
+      if (t && !seenActive.has(t)) {
+        inactiveTournaments.push(t);
+      }
+    });
+    inactiveTournaments.sort();
+
+    // 3. Combine active (recent first) and inactive (alphabetical)
+    const combinedTournaments = [...activeTournaments, ...inactiveTournaments];
+
     return {
-      tournaments: Array.from(tourns).sort(),
+      tournaments: combinedTournaments,
       opponents: Array.from(opps).sort()
     };
   }, [initialVideos, initialTournaments]);
@@ -174,35 +196,84 @@ export default function PlaybookContainer({ initialVideos, initialTournaments = 
 
           {/* Tournament Filter Chips */}
           <div className="flex flex-col gap-3 pt-1">
-            <span className="text-xs font-bold uppercase tracking-wider text-gray-500">대회별 경기</span>
-            <div className="flex flex-wrap gap-2 pb-1">
-              <button
-                onClick={() => setSelectedTournament('')}
-                className={`px-3.5 py-2 rounded-xl text-xs md:text-sm font-semibold whitespace-nowrap border transition-all duration-200 cursor-pointer ${
-                  !selectedTournament
-                    ? 'bg-primary text-dark-bg border-primary shadow-[0_0_10px_rgba(197,255,26,0.2)]'
-                    : 'bg-white/5 border-white/5 text-gray-400 hover:text-gray-200 hover:bg-white/10'
-                }`}
-              >
-                전체 대회 ({initialVideos.length})
-              </button>
-              {tournaments.map((t) => {
-                const count = initialVideos.filter(v => v.tournament === t).length;
-                return (
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-wider text-gray-500">대회별 경기</span>
+              {tournaments.length > 4 && (
+                <button
+                  onClick={() => setIsTournamentExpanded(!isTournamentExpanded)}
+                  className="text-xs font-bold text-primary hover:text-primary-hover transition-colors flex items-center gap-1 cursor-pointer select-none"
+                >
+                  {isTournamentExpanded ? '간단히 보기 ▴' : `더보기 (${tournaments.length}) ▾`}
+                </button>
+              )}
+            </div>
+
+            {isTournamentExpanded ? (
+              // Wrapped Grid view when expanded
+              <div className="flex flex-wrap gap-2 pb-1 animate-fadeIn">
+                <button
+                  onClick={() => setSelectedTournament('')}
+                  className={`px-3.5 py-2 rounded-xl text-xs md:text-sm font-semibold whitespace-nowrap border transition-all duration-200 cursor-pointer ${
+                    !selectedTournament
+                      ? 'bg-primary text-dark-bg border-primary shadow-[0_0_10px_rgba(197,255,26,0.2)]'
+                      : 'bg-white/5 border-white/5 text-gray-400 hover:text-gray-200 hover:bg-white/10'
+                  }`}
+                >
+                  전체 대회 ({initialVideos.length})
+                </button>
+                {tournaments.map((t) => {
+                  const count = initialVideos.filter(v => v.tournament === t).length;
+                  return (
+                    <button
+                      key={t}
+                      onClick={() => setSelectedTournament(selectedTournament === t ? '' : t)}
+                      className={`px-3.5 py-2 rounded-xl text-xs md:text-sm font-semibold whitespace-nowrap border transition-all duration-200 cursor-pointer ${
+                        selectedTournament === t
+                          ? 'bg-primary text-dark-bg border-primary shadow-[0_0_10px_rgba(197,255,26,0.2)]'
+                          : 'bg-white/5 border-white/5 text-gray-400 hover:text-gray-200 hover:bg-white/10'
+                      }`}
+                    >
+                      {t} ({count})
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              // Horizontal Scroll view when collapsed
+              <div className="relative">
+                {/* Gradient overlay to indicate scroll availability */}
+                <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-dark-bg via-dark-bg/70 to-transparent pointer-events-none z-10" />
+                
+                <div className="flex overflow-x-auto gap-2 pb-2 scrollbar-none whitespace-nowrap select-none pr-12">
                   <button
-                    key={t}
-                    onClick={() => setSelectedTournament(selectedTournament === t ? '' : t)}
-                    className={`px-3.5 py-2 rounded-xl text-xs md:text-sm font-semibold whitespace-nowrap border transition-all duration-200 cursor-pointer ${
-                      selectedTournament === t
+                    onClick={() => setSelectedTournament('')}
+                    className={`px-3.5 py-2 rounded-xl text-xs md:text-sm font-semibold whitespace-nowrap border transition-all duration-200 cursor-pointer shrink-0 ${
+                      !selectedTournament
                         ? 'bg-primary text-dark-bg border-primary shadow-[0_0_10px_rgba(197,255,26,0.2)]'
                         : 'bg-white/5 border-white/5 text-gray-400 hover:text-gray-200 hover:bg-white/10'
                     }`}
                   >
-                    {t} ({count})
+                    전체 대회 ({initialVideos.length})
                   </button>
-                );
-              })}
-            </div>
+                  {tournaments.map((t) => {
+                    const count = initialVideos.filter(v => v.tournament === t).length;
+                    return (
+                      <button
+                        key={t}
+                        onClick={() => setSelectedTournament(selectedTournament === t ? '' : t)}
+                        className={`px-3.5 py-2 rounded-xl text-xs md:text-sm font-semibold whitespace-nowrap border transition-all duration-200 cursor-pointer shrink-0 ${
+                          selectedTournament === t
+                            ? 'bg-primary text-dark-bg border-primary shadow-[0_0_10px_rgba(197,255,26,0.2)]'
+                            : 'bg-white/5 border-white/5 text-gray-400 hover:text-gray-200 hover:bg-white/10'
+                        }`}
+                      >
+                        {t} ({count})
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Filtering Bar */}
