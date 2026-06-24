@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Home, LogOut, ShieldAlert, CheckCircle, AlertTriangle, Save, Loader2, Plus, X, RefreshCw } from 'lucide-react';
+import { Home, LogOut, ShieldAlert, CheckCircle, AlertTriangle, Save, Loader2, Plus, X, RefreshCw, BarChart3 } from 'lucide-react';
 
 export default function AdminPage() {
   const [password, setPassword] = useState('');
@@ -14,6 +14,11 @@ export default function AdminPage() {
   const [savingId, setSavingId] = useState(null);
   const [message, setMessage] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Visitor stats states
+  const [stats, setStats] = useState(null);
+  const [statsTab, setStatsTab] = useState('daily'); // 'daily' | 'weekly' | 'monthly'
+  const [loadingStats, setLoadingStats] = useState(false);
 
   // Tournament list states
   const [tournaments, setTournaments] = useState([]);
@@ -43,6 +48,33 @@ export default function AdminPage() {
     win_team: ''
   });
 
+  const fetchStats = async (pw) => {
+    const pwToUse = pw || localStorage.getItem('gugu_admin_pw');
+    if (!pwToUse) return;
+
+    setLoadingStats(true);
+    try {
+      const res = await fetch('/api/admin/stats', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pwToUse })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setStats(data.stats);
+      } else {
+        console.error('Failed to fetch visitor stats:', data.error);
+        if (data.stats) {
+          setStats(data.stats);
+        }
+      }
+    } catch (e) {
+      console.error('Failed to fetch visitor stats:', e);
+    } finally {
+      setLoadingStats(false);
+    }
+  };
+
   const handleLogin = async (pwToTry) => {
     const pw = pwToTry || password;
     if (!pw) return;
@@ -65,6 +97,7 @@ export default function AdminPage() {
         setTournaments(data.tournaments || []);
         localStorage.setItem('gugu_admin_pw', pw);
         setPassword('');
+        fetchStats(pw); // Load visitor statistics
       } else {
         setError(data.error || '인증에 실패했습니다.');
         localStorage.removeItem('gugu_admin_pw');
@@ -683,6 +716,181 @@ export default function AdminPage() {
           </div>
         )}
 
+        {/* Visitor Stats Dashboard Card */}
+        {isAuthenticated && stats && (
+          <div className="glass p-6 rounded-3xl border border-white/5 space-y-6 animate-fadeIn">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <BarChart3 className="w-5 h-5 text-primary" />
+                <div>
+                  <h3 className="text-sm md:text-base font-extrabold text-white">📊 방문자 통계</h3>
+                  <p className="text-[10px] text-gray-500">일별, 주별, 월별 방문 분석</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                {loadingStats && <Loader2 className="w-3.5 h-3.5 animate-spin text-gray-400" />}
+                <button
+                  onClick={() => fetchStats()}
+                  disabled={loadingStats}
+                  className="p-1.5 rounded-lg hover:bg-white/10 text-gray-400 hover:text-gray-200 transition-colors cursor-pointer"
+                  title="통계 새로고침"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Error Message for missing table / DB issue */}
+            {stats.error && (
+              <div className="p-4 bg-amber-950/40 border border-amber-500/20 rounded-2xl space-y-2 text-xs text-amber-400">
+                <div className="flex items-center gap-2 font-bold">
+                  <AlertTriangle className="w-4 h-4 shrink-0 text-amber-400" />
+                  <span>Supabase visitor_log 테이블을 찾을 수 없습니다.</span>
+                </div>
+                <p className="text-gray-400">
+                  Supabase를 연동하여 사용 중인 경우, 방문자 통계 수집을 위해 아래 SQL 쿼리를 Supabase SQL Editor에서 실행해 주세요:
+                </p>
+                <pre className="p-3 bg-black/60 rounded-xl overflow-x-auto text-[10px] text-gray-300 font-mono">
+{`CREATE TABLE IF NOT EXISTS visitor_log (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  created_at TIMESTAMPTZ DEFAULT now()
+);`}
+                </pre>
+              </div>
+            )}
+
+            {/* Metrics Grid */}
+            {!stats.error && (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {(() => {
+                    const activeData = stats[statsTab] || [];
+                    const total = activeData.reduce((sum, item) => sum + item.count, 0);
+                    const avg = activeData.length > 0 ? (total / activeData.length).toFixed(1) : '0';
+                    const max = activeData.length > 0 ? Math.max(...activeData.map(item => item.count)) : 0;
+                    
+                    let periodLabel = '선택 범위';
+                    if (statsTab === 'daily') periodLabel = '최근 30일';
+                    else if (statsTab === 'weekly') periodLabel = '최근 12주';
+                    else if (statsTab === 'monthly') periodLabel = '최근 12개월';
+
+                    let todayCount = null;
+                    if (statsTab === 'daily' && activeData.length > 0) {
+                      todayCount = activeData[activeData.length - 1].count;
+                    }
+
+                    return (
+                      <>
+                        <div className="bg-white/5 border border-white/5 rounded-2xl p-4 flex flex-col justify-between">
+                          <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">누적 방문수 ({periodLabel})</span>
+                          <span className="text-xl font-black text-white mt-1">{total.toLocaleString()}회</span>
+                        </div>
+                        <div className="bg-white/5 border border-white/5 rounded-2xl p-4 flex flex-col justify-between">
+                          <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">평균 방문수</span>
+                          <span className="text-xl font-black text-primary mt-1">{avg}회</span>
+                        </div>
+                        <div className="bg-white/5 border border-white/5 rounded-2xl p-4 flex flex-col justify-between">
+                          {todayCount !== null ? (
+                            <>
+                              <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">오늘 방문수</span>
+                              <span className="text-xl font-black text-emerald-400 mt-1">{todayCount}회</span>
+                            </>
+                          ) : (
+                            <>
+                              <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">최다 방문수</span>
+                              <span className="text-xl font-black text-amber-400 mt-1">{max}회</span>
+                            </>
+                          )}
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
+
+                {/* Tab Control */}
+                <div className="flex gap-2 border-b border-white/5 pb-2">
+                  <button
+                    onClick={() => setStatsTab('daily')}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
+                      statsTab === 'daily'
+                        ? 'bg-primary text-dark-bg border-primary shadow-[0_0_10px_rgba(197,255,26,0.2)]'
+                        : 'bg-white/5 border-white/5 text-gray-400 hover:bg-white/10'
+                    }`}
+                  >
+                    일별 (최근 30일)
+                  </button>
+                  <button
+                    onClick={() => setStatsTab('weekly')}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
+                      statsTab === 'weekly'
+                        ? 'bg-primary text-dark-bg border-primary shadow-[0_0_10px_rgba(197,255,26,0.2)]'
+                        : 'bg-white/5 border-white/5 text-gray-400 hover:bg-white/10'
+                    }`}
+                  >
+                    주별 (최근 12주)
+                  </button>
+                  <button
+                    onClick={() => setStatsTab('monthly')}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
+                      statsTab === 'monthly'
+                        ? 'bg-primary text-dark-bg border-primary shadow-[0_0_10px_rgba(197,255,26,0.2)]'
+                        : 'bg-white/5 border-white/5 text-gray-400 hover:bg-white/10'
+                    }`}
+                  >
+                    월별 (최근 12개월)
+                  </button>
+                </div>
+
+                {/* Chart List (Horizontal Bar Chart) */}
+                <div className="space-y-2 max-h-60 overflow-y-auto pr-2 scrollbar-thin">
+                  {(() => {
+                    const activeData = stats[statsTab] || [];
+                    const maxCount = activeData.length > 0 ? Math.max(...activeData.map(item => item.count)) : 0;
+
+                    if (activeData.length === 0) {
+                      return <p className="text-xs text-gray-500 py-4 text-center">기록된 방문 데이터가 없습니다.</p>;
+                    }
+
+                    return activeData.slice().reverse().map((item) => {
+                      const percentage = maxCount > 0 ? (item.count / maxCount) * 100 : 0;
+                      
+                      let displayLabel = item.date;
+                      if (statsTab === 'daily') {
+                        const parts = item.date.split('-');
+                        if (parts.length === 3) displayLabel = `${parts[1]}.${parts[2]}`;
+                      } else if (statsTab === 'weekly') {
+                        const parts = item.date.split('-');
+                        if (parts.length === 3) displayLabel = `${parts[1]}.${parts[2]}주`;
+                      } else if (statsTab === 'monthly') {
+                        const parts = item.date.split('-');
+                        if (parts.length === 2) displayLabel = `${parts[1]}월`;
+                      }
+
+                      return (
+                        <div key={item.date} className="flex items-center gap-3 hover:bg-white/5 px-2 py-1.5 rounded-xl transition-colors group">
+                          <span className="w-14 text-xs font-semibold text-gray-400 group-hover:text-gray-200 transition-colors shrink-0">
+                            {displayLabel}
+                          </span>
+                          <div className="flex-grow h-3 bg-white/5 rounded-full overflow-hidden relative">
+                            <div
+                              style={{ width: `${percentage}%` }}
+                              className="bg-gradient-to-r from-primary/70 to-primary h-full rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(197,255,26,0.2)]"
+                            />
+                          </div>
+                          <span className="w-12 text-right text-xs font-bold text-white shrink-0">
+                            {item.count}회
+                          </span>
+                        </div>
+                      );
+                    });
+                  })()}
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
         {/* Action Controls (Manual Add Toggle) */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/5 border border-white/5 p-4 rounded-3xl">
           <div className="space-y-1">
@@ -837,12 +1045,33 @@ export default function AdminPage() {
                         )}
                       </div>
 
+                      <div className="flex items-center gap-1.5">
+                        <span>방문 통계(visitor_log) 테이블 상태:</span>
+                        {diagnostics.diagnostics.visitorLogTable?.success ? (
+                          <span className="text-emerald-400 font-bold">정상</span>
+                        ) : (
+                          <span className="text-red-400 font-bold">오류 ({diagnostics.diagnostics.visitorLogTable?.error})</span>
+                        )}
+                      </div>
+
                       {diagnostics.diagnostics.deletedVideosTable?.code === '42P01' && (
                         <div className="bg-red-955/20 p-3 rounded-lg border border-red-500/15 text-red-300 space-y-1.5 leading-relaxed">
                           <div><strong>해결 방법 (삭제 추적 테이블 미생성):</strong> Supabase SQL Editor에서 아래 SQL을 실행하여 deleted_videos 테이블을 생성해 주세요.</div>
                           <pre className="p-2 bg-black/40 rounded text-[10px] font-mono text-gray-400 overflow-x-auto select-all">
 {`CREATE TABLE IF NOT EXISTS deleted_videos (
   source_video_id TEXT PRIMARY KEY,
+  created_at TIMESTAMPTZ DEFAULT now()
+);`}
+                          </pre>
+                        </div>
+                      )}
+
+                      {diagnostics.diagnostics.visitorLogTable?.code === '42P01' && (
+                        <div className="bg-red-955/20 p-3 rounded-lg border border-red-500/15 text-red-300 space-y-1.5 leading-relaxed">
+                          <div><strong>해결 방법 (방문자 통계 테이블 미생성):</strong> Supabase SQL Editor에서 아래 SQL을 실행하여 visitor_log 테이블을 생성해 주세요.</div>
+                          <pre className="p-2 bg-black/40 rounded text-[10px] font-mono text-gray-400 overflow-x-auto select-all">
+{`CREATE TABLE IF NOT EXISTS visitor_log (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   created_at TIMESTAMPTZ DEFAULT now()
 );`}
                           </pre>

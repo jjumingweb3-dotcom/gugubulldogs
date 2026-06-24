@@ -77,6 +77,18 @@ export async function POST(request) {
       diagnostics.deletedVideosTable = { success: false, error: e.message };
     }
 
+    // Test visitor_log table
+    try {
+      const { data, error } = await supabase.from('visitor_log').select('*').limit(1);
+      if (error) {
+        diagnostics.visitorLogTable = { success: false, error: error.message, code: error.code };
+      } else {
+        diagnostics.visitorLogTable = { success: true, count: data.length };
+      }
+    } catch (e) {
+      diagnostics.visitorLogTable = { success: false, error: e.message };
+    }
+
     // Test inserting to tournaments table
     if (diagnostics.tournamentsTable && diagnostics.tournamentsTable.success) {
       try {

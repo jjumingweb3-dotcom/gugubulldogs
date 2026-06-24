@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Settings, Play, Youtube, Tv, Calendar, Info, Music } from 'lucide-react';
 import Link from 'next/link';
 import CategoryTabs from './CategoryTabs';
@@ -9,6 +9,24 @@ import VideoCard from './VideoCard';
 import VideoDetailModal from './VideoDetailModal';
 
 export default function PlaybookContainer({ initialVideos, initialTournaments = [] }) {
+  // Log visit once per session
+  useEffect(() => {
+    try {
+      const hasVisited = sessionStorage.getItem('gugu_visited');
+      if (!hasVisited) {
+        fetch('/api/visit', { method: 'POST' })
+          .then(res => {
+            if (res.ok) {
+              sessionStorage.setItem('gugu_visited', 'true');
+            }
+          })
+          .catch(e => console.error('Error logging visit:', e));
+      }
+    } catch (err) {
+      console.error('SessionStorage error:', err);
+    }
+  }, []);
+
   // Client-side states for search and filtering
   const [activeTab, setActiveTab] = useState('전체');
   const [searchQuery, setSearchQuery] = useState('');
