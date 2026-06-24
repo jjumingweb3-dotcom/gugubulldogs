@@ -591,7 +591,7 @@ export default function AdminPage() {
                 placeholder="비밀번호(로컬 기본값: 1234)"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-900 border border-gray-800 focus:border-primary/20 focus:bg-gray-950 rounded-2xl outline-none text-sm placeholder-gray-600 text-gray-200 transition-all duration-300"
+                className="w-full px-4 py-3 bg-gray-900 border border-gray-700 focus:border-primary/20 focus:bg-gray-950 rounded-2xl outline-none text-sm placeholder-gray-600 text-gray-200 transition-all duration-300"
               />
             </div>
 
@@ -633,7 +633,7 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen flex flex-col bg-dark-bg">
       {/* Admin Header */}
-      <header className="sticky top-0 z-30 w-full glass border-b border-gray-800 py-4 px-4 md:px-8">
+      <header className="sticky top-0 z-30 w-full glass border-b border-gray-700 py-4 px-4 md:px-8">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-dark-bg font-extrabold text-sm shadow-[0_0_10px_rgba(59,130,246,0.3)]">
@@ -648,7 +648,7 @@ export default function AdminPage() {
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2 bg-gray-900 border border-gray-800 rounded-xl px-2.5 py-1.5 text-xs text-gray-300">
+            <div className="flex items-center gap-2 bg-gray-900 border border-gray-700 rounded-xl px-2.5 py-1.5 text-xs text-gray-300">
               <select
                 value={syncYear}
                 onChange={(e) => setSyncYear(e.target.value)}
@@ -680,7 +680,7 @@ export default function AdminPage() {
             </button>
             <Link
               href="/"
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gray-900 border border-gray-800 hover:bg-gray-800 text-xs font-semibold text-gray-400 hover:text-gray-200 transition-all duration-300"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gray-900 border border-gray-700 hover:bg-gray-800 text-xs font-semibold text-gray-400 hover:text-gray-200 transition-all duration-300"
             >
               <Home className="w-3.5 h-3.5" />
               <span>홈으로</span>
@@ -718,7 +718,7 @@ export default function AdminPage() {
 
         {/* Visitor Stats Dashboard Card */}
         {isAuthenticated && stats && (
-          <div className="glass p-6 rounded-3xl border border-gray-800 space-y-6 animate-fadeIn">
+          <div className="glass p-6 rounded-3xl border border-gray-700 space-y-6 animate-fadeIn">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <BarChart3 className="w-5 h-5 text-primary" />
@@ -782,15 +782,15 @@ export default function AdminPage() {
 
                     return (
                       <>
-                        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4 flex flex-col justify-between">
+                        <div className="bg-gray-900 border border-gray-700 rounded-2xl p-4 flex flex-col justify-between">
                           <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">누적 방문수 ({periodLabel})</span>
                           <span className="text-xl font-black text-gray-100 mt-1">{total.toLocaleString()}회</span>
                         </div>
-                        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4 flex flex-col justify-between">
+                        <div className="bg-gray-900 border border-gray-700 rounded-2xl p-4 flex flex-col justify-between">
                           <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">평균 방문수</span>
                           <span className="text-xl font-black text-primary mt-1">{avg}회</span>
                         </div>
-                        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4 flex flex-col justify-between">
+                        <div className="bg-gray-900 border border-gray-700 rounded-2xl p-4 flex flex-col justify-between">
                           {todayCount !== null ? (
                             <>
                               <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">오늘 방문수</span>
@@ -809,13 +809,13 @@ export default function AdminPage() {
                 </div>
 
                 {/* Tab Control */}
-                <div className="flex gap-2 border-b border-gray-800 pb-2">
+                <div className="flex gap-2 border-b border-gray-700 pb-2">
                   <button
                     onClick={() => setStatsTab('daily')}
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
                       statsTab === 'daily'
                         ? 'bg-primary text-dark-bg border-primary shadow-[0_0_10px_rgba(59,130,246,0.2)]'
-                        : 'bg-gray-900 border-gray-800 text-gray-400 hover:bg-gray-800'
+                        : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-gray-100 hover:bg-gray-700'
                     }`}
                   >
                     일별 (최근 30일)
@@ -825,7 +825,7 @@ export default function AdminPage() {
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
                       statsTab === 'weekly'
                         ? 'bg-primary text-dark-bg border-primary shadow-[0_0_10px_rgba(59,130,246,0.2)]'
-                        : 'bg-gray-900 border-gray-800 text-gray-400 hover:bg-gray-800'
+                        : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-gray-100 hover:bg-gray-700'
                     }`}
                   >
                     주별 (최근 12주)
@@ -835,7 +835,7 @@ export default function AdminPage() {
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
                       statsTab === 'monthly'
                         ? 'bg-primary text-dark-bg border-primary shadow-[0_0_10px_rgba(59,130,246,0.2)]'
-                        : 'bg-gray-900 border-gray-800 text-gray-400 hover:bg-gray-800'
+                        : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-gray-100 hover:bg-gray-700'
                     }`}
                   >
                     월별 (최근 12개월)
@@ -892,7 +892,7 @@ export default function AdminPage() {
         )}
 
         {/* Action Controls (Manual Add Toggle) */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gray-900 border border-gray-800 p-4 rounded-3xl">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gray-900 border border-gray-700 p-4 rounded-3xl">
           <div className="space-y-1">
             <h3 className="text-sm md:text-base font-extrabold text-gray-100">경기 영상 데이터 관리</h3>
             <p className="text-xs text-gray-500">영상을 추가 수기 등록하거나 대회명 관리, 분류 메타데이터를 편집합니다.</p>
@@ -907,7 +907,7 @@ export default function AdminPage() {
               className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl font-bold text-xs md:text-sm transition-all duration-300 shadow-md active:scale-95 border ${
                 showTournamentForm
                   ? 'bg-amber-950/40 border-amber-500/25 text-amber-400'
-                  : 'bg-gray-900 border-gray-800 text-gray-400 hover:text-gray-200 hover:bg-gray-800'
+                  : 'bg-gray-900 border-gray-700 text-gray-400 hover:text-gray-200 hover:bg-gray-800'
               }`}
             >
               🏆 대회 목록 관리
@@ -953,7 +953,7 @@ export default function AdminPage() {
                 placeholder="새로운 대회명 입력 (예: 봉황대기 전국대회)"
                 value={newTournamentName}
                 onChange={(e) => setNewTournamentName(e.target.value)}
-                className="flex-grow px-3 py-2 bg-gray-950 border border-gray-800 rounded-xl text-xs md:text-sm text-gray-300 outline-none focus:border-primary/20"
+                className="flex-grow px-3 py-2 bg-gray-950 border border-gray-700 rounded-xl text-xs md:text-sm text-gray-300 outline-none focus:border-primary/20"
                 required
               />
               <button
@@ -971,7 +971,7 @@ export default function AdminPage() {
               {tournaments.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
                   {tournaments.map((t) => (
-                    <div key={t} className="flex items-center justify-between px-3 py-2 bg-gray-900 border border-gray-800 rounded-xl text-xs md:text-sm text-gray-300">
+                    <div key={t} className="flex items-center justify-between px-3 py-2 bg-gray-900 border border-gray-700 rounded-xl text-xs md:text-sm text-gray-300">
                       <span className="truncate pr-2">{t}</span>
                       <button
                         type="button"
@@ -990,7 +990,7 @@ export default function AdminPage() {
             </div>
 
             {/* Database Diagnosis Button & Output */}
-            <div className="pt-4 border-t border-gray-800 space-y-3">
+            <div className="pt-4 border-t border-gray-700 space-y-3">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <span className="text-[11px] text-gray-400">데이터베이스 연동이 불안정하거나 대회 추가/삭제가 안 되나요?</span>
                 <button
@@ -1004,7 +1004,7 @@ export default function AdminPage() {
               </div>
 
               {diagnostics && (
-                <div className="p-4 bg-gray-900 border border-gray-800 rounded-2xl text-xs space-y-3 animate-fadeIn text-gray-300">
+                <div className="p-4 bg-gray-900 border border-gray-700 rounded-2xl text-xs space-y-3 animate-fadeIn text-gray-300">
                   <h5 className="font-extrabold text-amber-400">🔍 진단 리포트</h5>
                   
                   <div className="space-y-1">
@@ -1144,7 +1144,7 @@ ALTER TABLE tournaments DISABLE ROW LEVEL SECURITY;`}
                 <select
                   value={newVideo.source}
                   onChange={(e) => handleNewVideoInputChange('source', e.target.value)}
-                  className="w-full px-3 py-2.5 bg-gray-950 border border-gray-800 rounded-xl text-xs md:text-sm text-gray-300 outline-none focus:border-primary/20"
+                  className="w-full px-3 py-2.5 bg-gray-950 border border-gray-700 rounded-xl text-xs md:text-sm text-gray-300 outline-none focus:border-primary/20"
                 >
                   <option value="youtube">YouTube</option>
                   <option value="soop">SOOP (아프리카TV)</option>
@@ -1158,7 +1158,7 @@ ALTER TABLE tournaments DISABLE ROW LEVEL SECURITY;`}
                   placeholder="예: https://www.youtube.com/watch?v=... 또는 https://vod.sooplive.co.kr/player/..."
                   value={newVideo.url}
                   onChange={(e) => handleNewVideoInputChange('url', e.target.value)}
-                  className="w-full px-3 py-2 bg-gray-950 border border-gray-800 rounded-xl text-xs md:text-sm text-gray-300 outline-none focus:border-primary/20"
+                  className="w-full px-3 py-2 bg-gray-950 border border-gray-700 rounded-xl text-xs md:text-sm text-gray-300 outline-none focus:border-primary/20"
                   required
                 />
               </div>
@@ -1172,7 +1172,7 @@ ALTER TABLE tournaments DISABLE ROW LEVEL SECURITY;`}
                   placeholder="예: U11 꿈나무부 vs 동작리틀 백호기 본선"
                   value={newVideo.title}
                   onChange={(e) => handleNewVideoInputChange('title', e.target.value)}
-                  className="w-full px-3 py-2 bg-gray-950 border border-gray-800 rounded-xl text-xs md:text-sm text-gray-300 outline-none focus:border-primary/20"
+                  className="w-full px-3 py-2 bg-gray-950 border border-gray-700 rounded-xl text-xs md:text-sm text-gray-300 outline-none focus:border-primary/20"
                   required
                 />
               </div>
@@ -1184,7 +1184,7 @@ ALTER TABLE tournaments DISABLE ROW LEVEL SECURITY;`}
                   value={newVideo.published_at}
                   onChange={(e) => handleNewVideoInputChange('published_at', e.target.value)}
                   style={{ colorScheme: 'light' }}
-                  className="w-full px-3 py-2 bg-gray-950 border border-gray-800 rounded-xl text-xs md:text-sm text-gray-300 outline-none focus:border-primary/20"
+                  className="w-full px-3 py-2 bg-gray-950 border border-gray-700 rounded-xl text-xs md:text-sm text-gray-300 outline-none focus:border-primary/20"
                 />
               </div>
             </div>
@@ -1195,7 +1195,7 @@ ALTER TABLE tournaments DISABLE ROW LEVEL SECURITY;`}
                 <select
                   value={newVideo.team_division}
                   onChange={(e) => handleNewVideoInputChange('team_division', e.target.value)}
-                  className="w-full px-3 py-2.5 bg-gray-950 border border-gray-800 rounded-xl text-xs md:text-sm text-gray-300 outline-none focus:border-primary/20"
+                  className="w-full px-3 py-2.5 bg-gray-950 border border-gray-700 rounded-xl text-xs md:text-sm text-gray-300 outline-none focus:border-primary/20"
                 >
                   <option value="미분류">미분류 (대기)</option>
                   <option value="새싹부">새싹부</option>
@@ -1212,7 +1212,7 @@ ALTER TABLE tournaments DISABLE ROW LEVEL SECURITY;`}
                 <select
                   value={newVideo.tournament || ''}
                   onChange={(e) => handleNewVideoInputChange('tournament', e.target.value)}
-                  className="w-full px-3 py-2.5 bg-gray-950 border border-gray-800 rounded-xl text-xs md:text-sm text-gray-350 outline-none focus:border-primary/20"
+                  className="w-full px-3 py-2.5 bg-gray-950 border border-gray-700 rounded-xl text-xs md:text-sm text-gray-350 outline-none focus:border-primary/20"
                 >
                   <option value="">대회 없음 (친선/기타)</option>
                   {tournaments.map((t) => (
@@ -1225,7 +1225,7 @@ ALTER TABLE tournaments DISABLE ROW LEVEL SECURITY;`}
             </div>
 
             {/* Score and Opponent inputs for new video */}
-            <div className="p-4 bg-gray-900 rounded-2xl border border-gray-800 space-y-3">
+            <div className="p-4 bg-gray-900 rounded-2xl border border-gray-700 space-y-3">
               <h5 className="text-xs font-bold text-gray-400">📊 경기 결과 입력 (상대팀 및 스코어)</h5>
               
               {(() => {
@@ -1245,7 +1245,7 @@ ALTER TABLE tournaments DISABLE ROW LEVEL SECURITY;`}
                           placeholder="예: 동작리틀"
                           value={opponentName}
                           onChange={(e) => handleNewVideoGameResultChange('opponent', e.target.value)}
-                          className="w-full px-3 py-2 bg-gray-950 border border-gray-800 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
+                          className="w-full px-3 py-2 bg-gray-950 border border-gray-700 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
                           required={newVideo.team_division !== '미분류'}
                         />
                       </div>
@@ -1256,7 +1256,7 @@ ALTER TABLE tournaments DISABLE ROW LEVEL SECURITY;`}
                         <select
                           value={newVideoBulldogsPos}
                           onChange={(e) => handleNewVideoGameResultChange('position', e.target.value)}
-                          className="w-full px-3 py-2.5 bg-gray-950 border border-gray-800 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
+                          className="w-full px-3 py-2.5 bg-gray-950 border border-gray-700 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
                         >
                           <option value="away">원정 (선공)</option>
                           <option value="home">홈 (후공)</option>
@@ -1272,7 +1272,7 @@ ALTER TABLE tournaments DISABLE ROW LEVEL SECURITY;`}
                             placeholder="예: 8"
                             value={bulldogsScore}
                             onChange={(e) => handleNewVideoGameResultChange('bulldogs_score', e.target.value)}
-                            className="w-full px-3 py-2 bg-gray-950 border border-gray-800 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
+                            className="w-full px-3 py-2 bg-gray-950 border border-gray-700 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
                           />
                         </div>
                         <div className="space-y-1">
@@ -1282,13 +1282,13 @@ ALTER TABLE tournaments DISABLE ROW LEVEL SECURITY;`}
                             placeholder="예: 5"
                             value={opponentScore}
                             onChange={(e) => handleNewVideoGameResultChange('opponent_score', e.target.value)}
-                            className="w-full px-3 py-2 bg-gray-950 border border-gray-800 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
+                            className="w-full px-3 py-2 bg-gray-950 border border-gray-700 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
                           />
                         </div>
                       </div>
                     </div>
 
-                    <div className="pt-2 border-t border-gray-800">
+                    <div className="pt-2 border-t border-gray-700">
                       <div className="space-y-1 max-w-md">
                         <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">승리 팀 이름 (점수 입력 시 자동 계산)</label>
                         <input
@@ -1296,7 +1296,7 @@ ALTER TABLE tournaments DISABLE ROW LEVEL SECURITY;`}
                           placeholder="예: 구구불독스 (점수 입력 시 자동 입력되며, 변경 가능)"
                           value={newVideo.win_team || ''}
                           onChange={(e) => handleNewVideoGameResultChange('win_team', e.target.value)}
-                          className="w-full px-3 py-2 bg-gray-950 border border-gray-800 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
+                          className="w-full px-3 py-2 bg-gray-950 border border-gray-700 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
                         />
                       </div>
                     </div>
@@ -1327,7 +1327,7 @@ ALTER TABLE tournaments DISABLE ROW LEVEL SECURITY;`}
 
         {/* Filters and Counters */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex gap-2 p-1 bg-gray-900 border border-gray-800 rounded-2xl w-fit">
+          <div className="flex gap-2 p-1 bg-gray-900 border border-gray-700 rounded-2xl w-fit">
             <button
               onClick={() => setFilterType('pending')}
               className={`px-4 py-2 rounded-xl text-xs md:text-sm font-semibold transition-all duration-200 ${
@@ -1390,7 +1390,7 @@ ALTER TABLE tournaments DISABLE ROW LEVEL SECURITY;`}
                         type="text"
                         value={video.title || ''}
                         onChange={(e) => handleInputChange(video.id, 'title', e.target.value)}
-                        className="w-full px-3.5 py-2.5 bg-gray-950 border border-gray-800 rounded-xl text-sm text-gray-200 outline-none focus:border-primary/20 transition-colors"
+                        className="w-full px-3.5 py-2.5 bg-gray-950 border border-gray-700 rounded-xl text-sm text-gray-200 outline-none focus:border-primary/20 transition-colors"
                       />
                     </div>
 
@@ -1411,7 +1411,7 @@ ALTER TABLE tournaments DISABLE ROW LEVEL SECURITY;`}
                           className={`w-full px-3 py-2.5 bg-gray-950 border rounded-xl text-xs md:text-sm outline-none ${
                             isPending 
                               ? 'border-amber-500/30 text-amber-400' 
-                              : 'border-gray-800 text-gray-300 focus:border-primary/20'
+                              : 'border-gray-700 text-gray-300 focus:border-primary/20'
                           }`}
                         >
                           <option value="미분류">미분류 (대기)</option>
@@ -1430,7 +1430,7 @@ ALTER TABLE tournaments DISABLE ROW LEVEL SECURITY;`}
                         <select
                           value={video.tournament || ''}
                           onChange={(e) => handleInputChange(video.id, 'tournament', e.target.value)}
-                          className="w-full px-3 py-2.5 bg-gray-950 border border-gray-800 rounded-xl text-xs md:text-sm text-gray-300 outline-none focus:border-primary/20"
+                          className="w-full px-3 py-2.5 bg-gray-950 border border-gray-700 rounded-xl text-xs md:text-sm text-gray-300 outline-none focus:border-primary/20"
                         >
                           <option value="">대회 없음 (친선/기타)</option>
                           {tournaments.map((t) => (
@@ -1452,13 +1452,13 @@ ALTER TABLE tournaments DISABLE ROW LEVEL SECURITY;`}
                           value={video.published_at ? video.published_at.substring(0, 10) : ''}
                           onChange={(e) => handleInputChange(video.id, 'published_at', e.target.value)}
                           style={{ colorScheme: 'light' }}
-                          className="w-full px-3 py-2.5 bg-gray-950 border border-gray-800 rounded-xl text-xs md:text-sm text-gray-300 outline-none focus:border-primary/20"
+                          className="w-full px-3 py-2.5 bg-gray-950 border border-gray-700 rounded-xl text-xs md:text-sm text-gray-300 outline-none focus:border-primary/20"
                         />
                       </div>
                     </div>
 
                     {/* Score results row */}
-                    <div className="bg-gray-900 p-4 rounded-2xl border border-gray-800 space-y-3">
+                    <div className="bg-gray-900 p-4 rounded-2xl border border-gray-700 space-y-3">
                       <h5 className="text-xs font-bold text-gray-400">📊 경기 결과 입력 (상대팀 및 스코어)</h5>
                       
                       {(() => {
@@ -1479,7 +1479,7 @@ ALTER TABLE tournaments DISABLE ROW LEVEL SECURITY;`}
                                   placeholder="예: 마포자이언츠"
                                   value={opponentName}
                                   onChange={(e) => handleGameResultChange(video.id, 'opponent', e.target.value, video)}
-                                  className="w-full px-3 py-2 bg-gray-950 border border-gray-800 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
+                                  className="w-full px-3 py-2 bg-gray-950 border border-gray-700 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
                                 />
                               </div>
 
@@ -1489,7 +1489,7 @@ ALTER TABLE tournaments DISABLE ROW LEVEL SECURITY;`}
                                 <select
                                   value={bulldogsPos}
                                   onChange={(e) => handleGameResultChange(video.id, 'position', e.target.value, video)}
-                                  className="w-full px-3 py-2.5 bg-gray-950 border border-gray-800 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
+                                  className="w-full px-3 py-2.5 bg-gray-950 border border-gray-700 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
                                 >
                                   <option value="away">원정 (선공)</option>
                                   <option value="home">홈 (후공)</option>
@@ -1505,7 +1505,7 @@ ALTER TABLE tournaments DISABLE ROW LEVEL SECURITY;`}
                                     placeholder="예: 8"
                                     value={bulldogsScore}
                                     onChange={(e) => handleGameResultChange(video.id, 'bulldogs_score', e.target.value, video)}
-                                    className="w-full px-3 py-2 bg-gray-950 border border-gray-800 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
+                                    className="w-full px-3 py-2 bg-gray-950 border border-gray-700 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
                                   />
                                 </div>
                                 <div className="space-y-1">
@@ -1515,13 +1515,13 @@ ALTER TABLE tournaments DISABLE ROW LEVEL SECURITY;`}
                                     placeholder="예: 5"
                                     value={opponentScore}
                                     onChange={(e) => handleGameResultChange(video.id, 'opponent_score', e.target.value, video)}
-                                    className="w-full px-3 py-2 bg-gray-950 border border-gray-800 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
+                                    className="w-full px-3 py-2 bg-gray-950 border border-gray-700 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
                                   />
                                 </div>
                               </div>
                             </div>
 
-                            <div className="pt-2 border-t border-gray-800">
+                            <div className="pt-2 border-t border-gray-700">
                               <div className="space-y-1 max-w-md">
                                 <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">승리 팀 이름 (점수 입력 시 자동 계산)</label>
                                 <input
@@ -1529,7 +1529,7 @@ ALTER TABLE tournaments DISABLE ROW LEVEL SECURITY;`}
                                   placeholder="예: 구구불독스 (점수 입력 시 자동 입력되며, 변경 가능)"
                                   value={video.win_team || ''}
                                   onChange={(e) => handleGameResultChange(video.id, 'win_team', e.target.value, video)}
-                                  className="w-full px-3 py-2 bg-gray-950 border border-gray-800 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
+                                  className="w-full px-3 py-2 bg-gray-950 border border-gray-700 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
                                 />
                               </div>
                             </div>
@@ -1539,7 +1539,7 @@ ALTER TABLE tournaments DISABLE ROW LEVEL SECURITY;`}
                     </div>
 
                     {/* Action buttons */}
-                    <div className="flex justify-between items-center pt-2 border-t border-gray-800">
+                    <div className="flex justify-between items-center pt-2 border-t border-gray-700">
                       <span className="text-[10px] text-gray-500 flex flex-col gap-0.5">
                         <span>원본 영상 ID: <code className="text-gray-400 font-mono">{video.source_video_id}</code></span>
                         <span>등록 일시: <span className="text-gray-400 font-mono">{new Date(video.published_at).toLocaleString('ko-KR')}</span></span>
@@ -1579,7 +1579,7 @@ ALTER TABLE tournaments DISABLE ROW LEVEL SECURITY;`}
             })}
           </div>
         ) : (
-          <div className="w-full py-20 bg-gray-900 border border-gray-800 rounded-3xl flex flex-col items-center justify-center text-center p-6 space-y-2">
+          <div className="w-full py-20 bg-gray-900 border border-gray-700 rounded-3xl flex flex-col items-center justify-center text-center p-6 space-y-2">
             <CheckCircle className="w-10 h-10 text-primary opacity-50" />
             <h4 className="text-sm font-bold text-gray-400">대기 중이거나 해당하는 영상이 없습니다</h4>
             <p className="text-xs text-gray-500">모든 경기가 정상적으로 분류되었습니다.</p>
@@ -1587,7 +1587,7 @@ ALTER TABLE tournaments DISABLE ROW LEVEL SECURITY;`}
         )}
       </main>
 
-      <footer className="w-full py-8 mt-12 bg-black/40 border-t border-gray-800 px-4 text-center text-xs text-gray-600">
+      <footer className="w-full py-8 mt-12 bg-black/40 border-t border-gray-700 px-4 text-center text-xs text-gray-600">
         <p>© 2026 구구불독스 플레이북 관리 시스템</p>
       </footer>
     </div>

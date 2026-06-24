@@ -91,7 +91,7 @@ export default function VideoCard({ video, onClick }) {
                   )
                 )}
                 {video.home_score !== undefined && video.home_score !== null && video.away_score !== undefined && video.away_score !== null && (
-                  <span className="text-white bg-black/45 px-1.5 py-0.5 rounded text-[10px] ml-1 font-extrabold font-mono">
+                  <span className="bg-primary text-white px-2 py-0.5 rounded-lg text-[10px] ml-1.5 font-black font-mono shadow-sm">
                     {video.away_score} : {video.home_score}
                   </span>
                 )}
@@ -100,7 +100,7 @@ export default function VideoCard({ video, onClick }) {
           ) : null}
         </div>
 
-        <div className="mt-4 pt-3 border-t border-white/5 space-y-1.5 text-xs text-gray-400">
+        <div className="mt-4 pt-3 border-t border-gray-700 space-y-1.5 text-xs text-gray-400">
           {/* Match Info Badges */}
           <div className="flex items-center gap-2">
             <Calendar className="w-3.5 h-3.5 text-gray-500" />

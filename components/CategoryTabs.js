@@ -11,7 +11,7 @@ export default function CategoryTabs({ activeTab, onTabChange, videoCounts }) {
 
   return (
     <div className="w-full overflow-x-auto no-scrollbar py-1">
-      <div className="flex gap-2 min-w-max p-1 bg-gray-900 border border-gray-800 rounded-2xl backdrop-blur-md">
+      <div className="flex gap-2 min-w-max p-1 bg-gray-800 border border-gray-700 rounded-2xl backdrop-blur-md">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
           const count = videoCounts[tab.id] || 0;
@@ -23,7 +23,7 @@ export default function CategoryTabs({ activeTab, onTabChange, videoCounts }) {
               className={`relative px-5 py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-all duration-300 ${
                 isActive
                   ? 'bg-primary text-dark-bg shadow-[0_4px_16px_rgba(59,130,246,0.25)]'
-                  : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800'
+                  : 'text-gray-400 hover:text-gray-100 hover:bg-gray-700'
               }`}
             >
               <div className="flex items-center gap-1.5">
@@ -32,7 +32,7 @@ export default function CategoryTabs({ activeTab, onTabChange, videoCounts }) {
                   className={`px-1.5 py-0.5 rounded-md text-[10px] font-bold ${
                     isActive 
                       ? 'bg-dark-bg/10 text-dark-bg' 
-                      : 'bg-gray-800 text-gray-400'
+                      : 'bg-gray-700 text-gray-300'
                   }`}
                 >
                   {count}

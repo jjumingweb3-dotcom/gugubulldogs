@@ -142,7 +142,7 @@ export default function PlaybookContainer({ initialVideos, initialTournaments = 
   return (
     <div className="flex-grow flex flex-col">
       {/* App Header */}
-      <header className="sticky top-0 z-30 w-full glass border-b border-gray-800 py-4 px-4 md:px-8">
+      <header className="sticky top-0 z-30 w-full glass border-b border-gray-700 py-4 px-4 md:px-8">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-dark-bg font-black text-lg shadow-[0_0_12px_rgba(59,130,246,0.4)]">
@@ -171,7 +171,7 @@ export default function PlaybookContainer({ initialVideos, initialTournaments = 
             {/* Link to Admin Panel */}
             <Link
               href="/admin"
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gray-900 border border-gray-800 hover:border-primary/20 hover:bg-gray-800 text-xs md:text-sm font-semibold text-gray-400 hover:text-primary transition-all duration-300"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gray-800 border border-gray-700 hover:border-primary/30 hover:bg-gray-700 text-xs md:text-sm font-semibold text-gray-400 hover:text-primary transition-all duration-300"
             >
               <Settings className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">관리자</span>
@@ -216,7 +216,7 @@ export default function PlaybookContainer({ initialVideos, initialTournaments = 
                   className={`px-3.5 py-2 rounded-xl text-xs md:text-sm font-semibold whitespace-nowrap border transition-all duration-200 cursor-pointer ${
                     !selectedTournament
                       ? 'bg-primary text-dark-bg border-primary shadow-[0_0_10px_rgba(59,130,246,0.2)]'
-                      : 'bg-gray-900 border-gray-800 text-gray-400 hover:text-gray-200 hover:bg-gray-800'
+                      : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-gray-100 hover:bg-gray-700'
                   }`}
                 >
                   전체 대회 ({initialVideos.length})
@@ -230,7 +230,7 @@ export default function PlaybookContainer({ initialVideos, initialTournaments = 
                       className={`px-3.5 py-2 rounded-xl text-xs md:text-sm font-semibold whitespace-nowrap border transition-all duration-200 cursor-pointer ${
                         selectedTournament === t
                           ? 'bg-primary text-dark-bg border-primary shadow-[0_0_10px_rgba(59,130,246,0.2)]'
-                          : 'bg-gray-900 border-gray-800 text-gray-400 hover:text-gray-200 hover:bg-gray-800'
+                          : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-gray-100 hover:bg-gray-700'
                       }`}
                     >
                       {t} ({count})
@@ -250,7 +250,7 @@ export default function PlaybookContainer({ initialVideos, initialTournaments = 
                     className={`px-3.5 py-2 rounded-xl text-xs md:text-sm font-semibold whitespace-nowrap border transition-all duration-200 cursor-pointer shrink-0 ${
                       !selectedTournament
                         ? 'bg-primary text-dark-bg border-primary shadow-[0_0_10px_rgba(59,130,246,0.2)]'
-                        : 'bg-gray-900 border-gray-800 text-gray-400 hover:text-gray-200 hover:bg-gray-800'
+                        : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-gray-100 hover:bg-gray-700'
                     }`}
                   >
                     전체 대회 ({initialVideos.length})
@@ -264,7 +264,7 @@ export default function PlaybookContainer({ initialVideos, initialTournaments = 
                         className={`px-3.5 py-2 rounded-xl text-xs md:text-sm font-semibold whitespace-nowrap border transition-all duration-200 cursor-pointer shrink-0 ${
                           selectedTournament === t
                             ? 'bg-primary text-dark-bg border-primary shadow-[0_0_10px_rgba(59,130,246,0.2)]'
-                            : 'bg-gray-900 border-gray-800 text-gray-400 hover:text-gray-200 hover:bg-gray-800'
+                            : 'bg-gray-800 border-gray-700 text-gray-400 hover:text-gray-100 hover:bg-gray-700'
                         }`}
                       >
                         {t} ({count})
@@ -311,8 +311,8 @@ export default function PlaybookContainer({ initialVideos, initialTournaments = 
               ))}
             </div>
           ) : (
-            <div className="w-full py-20 bg-gray-900 border border-gray-800 rounded-3xl flex flex-col items-center justify-center text-center p-6 space-y-3">
-              <Info className="w-10 h-10 text-gray-600" />
+            <div className="w-full py-20 bg-gray-800 border border-gray-700 rounded-3xl flex flex-col items-center justify-center text-center p-6 space-y-3">
+              <Info className="w-10 h-10 text-gray-500" />
               <div className="space-y-1">
                 <h4 className="text-sm font-bold text-gray-400">조건에 맞는 경기가 없습니다</h4>
                 <p className="text-xs text-gray-500">검색어나 필터 값을 확인해 주시거나 다른 탭을 선택해 보세요.</p>
@@ -334,7 +334,7 @@ export default function PlaybookContainer({ initialVideos, initialTournaments = 
       </main>
 
       {/* Footer */}
-      <footer className="w-full py-8 mt-12 bg-gray-900 border-t border-gray-800 px-4 text-center text-xs text-gray-600">
+      <footer className="w-full py-8 mt-12 bg-gray-900 border-t border-gray-700 px-4 text-center text-xs text-gray-600">
         <div className="max-w-6xl mx-auto space-y-1">
           <p>© 2026 구구불독스 유소년 야구단 플레이북. All rights reserved.</p>
           <p className="text-[10px]">본 플랫폼은 유튜브/SOOP의 공식 링크 공유(앱 딥링크) 규칙을 준수하며 영상을 직접 저장하거나 재배포하지 않습니다.</p>

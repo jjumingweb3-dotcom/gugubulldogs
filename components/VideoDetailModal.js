@@ -109,18 +109,18 @@ export default function VideoDetailModal({ video, onClose }) {
 
           {/* Match Result Scoreboard (Baseball Visitor vs Home concept) */}
           {video.home_score !== undefined && video.home_score !== null && video.away_score !== undefined && video.away_score !== null && (
-            <div className="bg-primary/10 border border-primary/20 rounded-2xl p-4 flex items-center justify-around text-center">
+            <div className="bg-primary/5 border border-primary/30 rounded-2xl p-4 flex items-center justify-around text-center">
               {/* Away (Visitor, Left) */}
               <div className="space-y-1 w-1/3">
-                <div className="text-[10px] text-gray-500 font-bold">원정팀 (초)</div>
-                <div className="text-sm font-semibold text-gray-300 truncate" title={awayTeamName}>
+                <div className="text-[10px] text-gray-400 font-bold">원정팀 (초)</div>
+                <div className="text-sm font-bold text-gray-100 truncate" title={awayTeamName}>
                   {awayTeamName}
                 </div>
               </div>
               
               {/* SCORE (Center) */}
               <div className="flex flex-col items-center w-1/3 shrink-0">
-                <div className="text-[9px] text-gray-500 uppercase tracking-widest font-bold">SCORE</div>
+                <div className="text-[9px] text-gray-400 uppercase tracking-widest font-bold">SCORE</div>
                 <div className="text-2xl font-black text-gray-100 tracking-wider font-mono">
                   {video.away_score} : {video.home_score}
                 </div>
@@ -130,7 +130,7 @@ export default function VideoDetailModal({ video, onClose }) {
                   </span>
                 ) : (
                   Number(video.home_score) === Number(video.away_score) ? (
-                    <span className="text-[9px] bg-gray-800 text-gray-300 px-1.5 py-0.5 rounded font-extrabold mt-1">무승부</span>
+                    <span className="text-[9px] bg-gray-700 text-gray-100 px-1.5 py-0.5 rounded font-extrabold mt-1">무승부</span>
                   ) : (
                     <span className="text-[9px] bg-primary/25 text-primary px-1.5 py-0.5 rounded font-extrabold mt-1">
                       {Number(video.home_score) > Number(video.away_score) ? '홈팀 승' : '원정팀 승'}
@@ -141,7 +141,7 @@ export default function VideoDetailModal({ video, onClose }) {
 
               {/* Home (Right) */}
               <div className="space-y-1 w-1/3">
-                <div className="text-[10px] text-gray-500 font-bold">홈팀 (말)</div>
+                <div className="text-[10px] text-gray-400 font-bold">홈팀 (말)</div>
                 <div className="text-sm font-extrabold text-primary truncate" title={homeTeamName}>
                   {homeTeamName}
                 </div>
@@ -150,7 +150,7 @@ export default function VideoDetailModal({ video, onClose }) {
           )}
 
           {/* Details Table */}
-          <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4 space-y-3.5 text-sm">
+          <div className="bg-gray-900 border border-gray-700 rounded-2xl p-4 space-y-3.5 text-sm">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5 text-gray-400">
                 <Calendar className="w-4 h-4 text-gray-500" />
