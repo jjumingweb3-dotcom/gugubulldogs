@@ -153,7 +153,7 @@ export default function VideoDetailModal({ video, onClose }) {
           <div className="bg-gray-900 border border-gray-700 rounded-2xl p-4 space-y-3.5 text-sm">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5 text-gray-400">
-                <Calendar className="w-4 h-4 text-gray-500" />
+                <Calendar className="w-4 h-4 text-gray-400" />
                 <span>경기 일자</span>
               </div>
               <span className="font-semibold text-gray-200">{formatDateFull(video.published_at)}</span>
@@ -161,7 +161,7 @@ export default function VideoDetailModal({ video, onClose }) {
 
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5 text-gray-400">
-                <Users className="w-4 h-4 text-gray-500" />
+                <Users className="w-4 h-4 text-gray-400" />
                 <span>상대 팀</span>
               </div>
               <span className="font-semibold text-gray-200">
@@ -171,7 +171,7 @@ export default function VideoDetailModal({ video, onClose }) {
 
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5 text-gray-400">
-                <Trophy className="w-4 h-4 text-gray-500" />
+                <Trophy className="w-4 h-4 text-gray-400" />
                 <span>참가 대회</span>
               </div>
               <span className="font-semibold text-gray-200">
@@ -181,7 +181,7 @@ export default function VideoDetailModal({ video, onClose }) {
 
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5 text-gray-400">
-                <span className="w-4 h-4 rounded-full bg-gray-500 flex items-center justify-center text-[10px] text-dark-bg font-bold">P</span>
+                <span className="w-4 h-4 rounded-full bg-gray-400 flex items-center justify-center text-[10px] text-dark-bg font-bold">P</span>
                 <span>송출 플랫폼</span>
               </div>
               <span className={`font-bold ${video.source === 'youtube' ? 'text-red-500' : 'text-blue-400'}`}>

@@ -103,25 +103,25 @@ export default function VideoCard({ video, onClick }) {
         <div className="mt-4 pt-3 border-t border-gray-700 space-y-1.5 text-xs text-gray-400">
           {/* Match Info Badges */}
           <div className="flex items-center gap-2">
-            <Calendar className="w-3.5 h-3.5 text-gray-500" />
+            <Calendar className="w-3.5 h-3.5 text-gray-400" />
             <span>{formatDate(video.published_at)}</span>
           </div>
 
           {video.opponent && (
             <div className="flex items-center gap-2">
-              <Users className="w-3.5 h-3.5 text-gray-500" />
+              <Users className="w-3.5 h-3.5 text-gray-400" />
               <span>상대: <strong className="text-gray-300 font-medium">{video.opponent}</strong></span>
             </div>
           )}
 
           {video.tournament ? (
             <div className="flex items-center gap-2">
-              <Trophy className="w-3.5 h-3.5 text-gray-500" />
+              <Trophy className="w-3.5 h-3.5 text-gray-400" />
               <span className="truncate">대회: <span className="text-gray-300 font-medium">{video.tournament}</span></span>
             </div>
           ) : (
-            <div className="flex items-center gap-2 text-gray-600">
-              <Trophy className="w-3.5 h-3.5 text-gray-700" />
+            <div className="flex items-center gap-2 text-gray-400">
+              <Trophy className="w-3.5 h-3.5 text-gray-400" />
               <span>대회명 없음</span>
             </div>
           )}

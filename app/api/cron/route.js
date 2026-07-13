@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { addVideos } from '@/lib/db';
+import { addVideos, getCrawlTargets } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
@@ -126,13 +126,14 @@ function parseSoopVods(vodArray, bjId, teamDivision, cutoffDate = CUTOFF_DATE) {
 }
 
 // Dynamically resolve YouTube Handle to Channel ID
+// Dynamically resolve YouTube Handle to Channel ID
 async function resolveYtChannelId(handle) {
   try {
     const formattedHandle = handle.startsWith('@') ? handle : `@${handle}`;
     const url = `https://www.youtube.com/${encodeURIComponent(formattedHandle)}`;
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
       }
     });
     if (!response.ok) return null;
@@ -143,6 +144,125 @@ async function resolveYtChannelId(handle) {
     console.error('Failed to resolve channel ID for', handle, e);
     return null;
   }
+}
+
+// Helper to parse relative date into Date object
+function parseRelativeDate(text) {
+  if (!text) return new Date();
+  const now = new Date();
+  const match = text.match(/(\d+)\s*(분|시간|일|주|개월|년)\s*전/);
+  if (!match) return now;
+  const val = parseInt(match[1], 10);
+  const unit = match[2];
+  switch (unit) {
+    case '분': return new Date(now.getTime() - val * 60 * 1000);
+    case '시간': return new Date(now.getTime() - val * 60 * 60 * 1000);
+    case '일': return new Date(now.getTime() - val * 24 * 60 * 60 * 1000);
+    case '주': return new Date(now.getTime() - val * 7 * 24 * 60 * 60 * 1000);
+    case '개월': return new Date(now.getTime() - val * 30 * 24 * 60 * 60 * 1000);
+    case '년': return new Date(now.getTime() - val * 365 * 24 * 60 * 60 * 1000);
+    default: return now;
+  }
+}
+
+// Scrape YouTube channel videos page as fallback
+async function scrapeYoutubeHtml(channelId, teamDivision, cutoffDate = CUTOFF_DATE) {
+  const videos = [];
+  const url = `https://www.youtube.com/channel/${channelId}/videos`;
+  console.log(`[YouTube Scraper Fallback] Fetching videos page for channel ${channelId}:`, url);
+  try {
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept-Language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7'
+      },
+      next: { revalidate: 0 }
+    });
+    if (!response.ok) {
+      console.warn(`[YouTube Scraper Fallback] Page fetch failed with status: ${response.status}`);
+      return [];
+    }
+    const html = await response.text();
+    
+    // Extract ytInitialData
+    const dataRegex = /var ytInitialData = ({[\s\S]*?});<\/script>/;
+    const match = html.match(dataRegex);
+    if (!match) {
+      console.warn('[YouTube Scraper Fallback] Could not find ytInitialData in HTML');
+      return [];
+    }
+    
+    const jsonData = JSON.parse(match[1]);
+    const tabs = jsonData.contents?.twoColumnBrowseResultsRenderer?.tabs;
+    if (!tabs) {
+      console.warn('[YouTube Scraper Fallback] No tabs structure in ytInitialData');
+      return [];
+    }
+    
+    for (const tab of tabs) {
+      const title = tab.tabRenderer?.title;
+      const isVideoTab = title === '동영상' || title === 'Videos';
+      const isLiveTab = title === '라이브' || title === 'Live' || title === 'Streams';
+      
+      if (isVideoTab || isLiveTab) {
+        const contents = tab.tabRenderer?.content?.richGridRenderer?.contents;
+        if (!contents) continue;
+        
+        for (const item of contents) {
+          const richItem = item.richItemRenderer;
+          if (richItem) {
+            const lockup = richItem.content?.lockupViewModel;
+            if (lockup) {
+              const videoId = lockup.contentId;
+              const videoTitle = lockup.metadata?.lockupMetadataViewModel?.title?.content;
+              
+              let relativeTime = '';
+              const rows = lockup.metadata?.lockupMetadataViewModel?.metadata?.contentMetadataViewModel?.metadataRows;
+              if (rows && rows[0]?.metadataParts) {
+                const parts = rows[0].metadataParts;
+                if (parts.length > 1) {
+                  relativeTime = parts[1].text?.content || '';
+                } else if (parts[0]?.text?.content) {
+                  relativeTime = parts[0].text.content;
+                }
+              }
+              
+              if (videoId && videoTitle) {
+                const publishedAt = parseRelativeDate(relativeTime);
+                
+                // Apply cutoff date filter
+                if (publishedAt < cutoffDate) {
+                  continue;
+                }
+                
+                const thumbnail = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+                const tournament = extractTournament(videoTitle);
+                const opponent = extractOpponent(videoTitle);
+                
+                if (!videos.some(v => v.source_video_id === videoId)) {
+                  videos.push({
+                    source: 'youtube',
+                    source_video_id: videoId,
+                    title: videoTitle.trim(),
+                    thumbnail_url: thumbnail,
+                    published_at: publishedAt.toISOString(),
+                    url: `https://www.youtube.com/watch?v=${videoId}`,
+                    team_division: teamDivision,
+                    tournament,
+                    opponent,
+                    parsed_status: 'success'
+                  });
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  } catch (err) {
+    console.error('[YouTube Scraper Fallback] Error occurred during HTML scraping:', err);
+  }
+  return videos;
 }
 
 export async function GET(request) {
@@ -160,89 +280,98 @@ export async function GET(request) {
     }
   }
 
-  const youtubeHandle = process.env.YOUTUBE_CHANNEL_HANDLE || '@구구불독스유소년야구';
-  const youtubeChannelIdOverride = process.env.YOUTUBE_CHANNEL_ID || 'UCDTAqwh48UIZgczSQYTtFHw'; // Fallback verified channel ID
-  const soopNewBjId = process.env.SOOP_NEW_BJ_ID || 'pik7688';      // U9 새싹부
-  const soopOldBjId = process.env.SOOP_OLD_BJ_ID || 'ncoolpis1245';  // U13 유소년부
+  // Fetch crawl targets from DB
+  const { targets } = await getCrawlTargets();
   
   let allScrapedVideos = [];
-  let youtubeSuccess = false;
-  let soopNewSuccess = false;
-  let soopOldSuccess = false;
+  const platformsStatus = {};
 
-  // 1. YouTube Scraping (꿈나무부)
-  try {
-    let channelId = youtubeChannelIdOverride;
+  for (const target of targets) {
+    const { platform, target_id, team_division } = target;
+    const statusKey = `${platform}_${team_division}_${target_id}`;
     
-    // Resolve handle if needed
-    if (!channelId && youtubeHandle) {
-      channelId = await resolveYtChannelId(youtubeHandle);
-    }
-    
-    if (channelId) {
-      const rssUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`;
-      const response = await fetch(rssUrl, { next: { revalidate: 0 } });
-      if (response.ok) {
-        const xmlText = await response.text();
-        const ytVideos = parseYouTubeRss(xmlText, '꿈나무부', cutoffDate);
-        allScrapedVideos = [...allScrapedVideos, ...ytVideos];
-        youtubeSuccess = true;
+    if (platform === 'youtube') {
+      try {
+        let channelId = target_id;
+        // Resolve handle if starts with @
+        if (target_id.startsWith('@')) {
+          const resolved = await resolveYtChannelId(target_id);
+          if (resolved) {
+            channelId = resolved;
+          }
+        }
+        
+        let youtubeSuccess = false;
+        // Try RSS first
+        try {
+          const rssUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`;
+          const response = await fetch(rssUrl, { 
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            },
+            next: { revalidate: 0 } 
+          });
+          if (response.ok) {
+            const xmlText = await response.text();
+            const ytVideos = parseYouTubeRss(xmlText, team_division, cutoffDate);
+            if (ytVideos.length > 0) {
+              allScrapedVideos = [...allScrapedVideos, ...ytVideos];
+              youtubeSuccess = true;
+            }
+          }
+        } catch (rssErr) {
+          console.error(`YouTube RSS failed for ${target_id}:`, rssErr);
+        }
+        
+        // Fallback to HTML Scraping if RSS failed or returned 0 videos
+        if (!youtubeSuccess) {
+          console.log(`[YouTube RSS Fallback Alert] Falling back to HTML scraping for channel ${channelId}`);
+          const ytHtmlVideos = await scrapeYoutubeHtml(channelId, team_division, cutoffDate);
+          if (ytHtmlVideos.length > 0) {
+            allScrapedVideos = [...allScrapedVideos, ...ytHtmlVideos];
+            youtubeSuccess = true;
+          }
+        }
+        
+        platformsStatus[statusKey] = youtubeSuccess ? 'success' : 'failed';
+      } catch (e) {
+        console.error(`Error scraping YouTube channel ${target_id}:`, e);
+        platformsStatus[statusKey] = 'failed';
+      }
+    } else if (platform === 'soop') {
+      try {
+        const apiUrl = `https://bjapi.afreecatv.com/api/${target_id}/vods?page=1`;
+        const response = await fetch(apiUrl, { 
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+          },
+          next: { revalidate: 0 } 
+        });
+        if (response.ok) {
+          const data = await response.json();
+          const soopVideos = parseSoopVods(data.data, target_id, team_division, cutoffDate);
+          allScrapedVideos = [...allScrapedVideos, ...soopVideos];
+          platformsStatus[statusKey] = 'success';
+        } else {
+          platformsStatus[statusKey] = 'failed';
+        }
+      } catch (e) {
+        console.error(`Error scraping SOOP BJ ${target_id}:`, e);
+        platformsStatus[statusKey] = 'failed';
       }
     }
-  } catch (e) {
-    console.error('Error fetching YouTube RSS for 꿈나무부:', e);
-  }
-
-  // 2. SOOP Scraping - 새싹부 (pik7688)
-  try {
-    const apiUrl = `https://bjapi.afreecatv.com/api/${soopNewBjId}/vods?page=1`;
-    const response = await fetch(apiUrl, { 
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
-      },
-      next: { revalidate: 0 } 
-    });
-    if (response.ok) {
-      const data = await response.json();
-      const soopVideos = parseSoopVods(data.data, soopNewBjId, '새싹부', cutoffDate);
-      allScrapedVideos = [...allScrapedVideos, ...soopVideos];
-      soopNewSuccess = true;
-    }
-  } catch (e) {
-    console.error('Error fetching SOOP VODs for 새싹부:', e);
-  }
-
-  // 3. SOOP Scraping - 유소년부 (ncoolpis1245)
-  try {
-    const apiUrl = `https://bjapi.afreecatv.com/api/${soopOldBjId}/vods?page=1`;
-    const response = await fetch(apiUrl, { 
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
-      },
-      next: { revalidate: 0 } 
-    });
-    if (response.ok) {
-      const data = await response.json();
-      const soopVideos = parseSoopVods(data.data, soopOldBjId, '유소년부', cutoffDate);
-      allScrapedVideos = [...allScrapedVideos, ...soopVideos];
-      soopOldSuccess = true;
-    }
-  } catch (e) {
-    console.error('Error fetching SOOP VODs for 유소년부:', e);
   }
 
   // Save parsed videos to DB (ignores duplicate source_video_id)
   const addedCount = await addVideos(allScrapedVideos);
 
+  const success = Object.values(platformsStatus).some(status => status === 'success');
+
   return NextResponse.json({
-    success: youtubeSuccess || soopNewSuccess || soopOldSuccess,
+    success,
     message: `${addedCount}개의 새로운 경기 영상이 동기화되었습니다.`,
     addedCount,
     scrapedTotal: allScrapedVideos.length,
-    platforms: {
-      youtube_꿈나무부: youtubeSuccess ? 'success' : 'failed',
-      soop_새싹부: soopNewSuccess ? 'success' : 'failed',
-      soop_유소년부: soopOldSuccess ? 'success' : 'failed'
-    }
+    platforms: platformsStatus
   });
 }

@@ -89,6 +89,18 @@ export async function POST(request) {
       diagnostics.visitorLogTable = { success: false, error: e.message };
     }
 
+    // Test crawl_targets table
+    try {
+      const { data, error } = await supabase.from('crawl_targets').select('*').limit(1);
+      if (error) {
+        diagnostics.crawlTargetsTable = { success: false, error: error.message, code: error.code };
+      } else {
+        diagnostics.crawlTargetsTable = { success: true, count: data.length };
+      }
+    } catch (e) {
+      diagnostics.crawlTargetsTable = { success: false, error: e.message };
+    }
+
     // Test inserting to tournaments table
     if (diagnostics.tournamentsTable && diagnostics.tournamentsTable.success) {
       try {

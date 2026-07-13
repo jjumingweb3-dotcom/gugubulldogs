@@ -23,7 +23,7 @@ export default function FilterBar({
       {/* Search Input and Filter Toggle */}
       <div className="flex gap-2">
         <div className="relative flex-grow">
-          <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
+          <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
             <Search className="w-5 h-5" />
           </span>
           <input
@@ -31,12 +31,12 @@ export default function FilterBar({
             placeholder="대회명, 상대팀, 제목 검색..."
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full pl-10 pr-10 py-3 bg-gray-900 border border-gray-700 focus:border-primary/50 focus:bg-gray-950 rounded-2xl outline-none text-sm placeholder-gray-500 text-gray-100 transition-all duration-300"
+            className="w-full pl-10 pr-10 py-3 bg-gray-900 border border-gray-700 focus:border-primary/50 focus:bg-gray-950 rounded-2xl outline-none text-sm placeholder-gray-400 text-gray-100 transition-all duration-300"
           />
           {searchQuery && (
             <button
               onClick={() => onSearchChange('')}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-300"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-200"
             >
               <X className="w-4 h-4" />
             </button>
@@ -66,7 +66,7 @@ export default function FilterBar({
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {/* Tournament Selector */}
             <div className="space-y-1.5">
-              <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">대회별 필터</label>
+              <label className="text-[10px] uppercase tracking-wider text-gray-300 font-bold">대회별 필터</label>
               <select
                 value={selectedTournament}
                 onChange={(e) => onTournamentChange(e.target.value)}
@@ -83,7 +83,7 @@ export default function FilterBar({
 
             {/* Opponent Selector */}
             <div className="space-y-1.5">
-              <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">상대팀별 필터</label>
+              <label className="text-[10px] uppercase tracking-wider text-gray-300 font-bold">상대팀별 필터</label>
               <select
                 value={selectedOpponent}
                 onChange={(e) => onOpponentChange(e.target.value)}
@@ -100,7 +100,7 @@ export default function FilterBar({
 
             {/* Platform Selector */}
             <div className="space-y-1.5">
-              <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">플랫폼</label>
+              <label className="text-[10px] uppercase tracking-wider text-gray-300 font-bold">플랫폼</label>
               <select
                 value={selectedPlatform}
                 onChange={(e) => onPlatformChange(e.target.value)}

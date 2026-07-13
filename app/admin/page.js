@@ -1,25 +1,25 @@
 'use client';
-
+ 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Home, LogOut, ShieldAlert, CheckCircle, AlertTriangle, Save, Loader2, Plus, X, RefreshCw, BarChart3 } from 'lucide-react';
-
+import { Home, LogOut, ShieldAlert, CheckCircle, AlertTriangle, Save, Loader2, Plus, X, RefreshCw, BarChart3, Radio, Trash2, Copy } from 'lucide-react';
+ 
 export default function AdminPage() {
   const [password, setPassword] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [videos, setVideos] = useState([]);
-  const [filterType, setFilterType] = useState('pending'); // 'all' | 'pending'
+  const [filterType, setFilterType] = useState('all'); // 'all' | 'targets'
   const [savingId, setSavingId] = useState(null);
   const [message, setMessage] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
-
+ 
   // Visitor stats states
   const [stats, setStats] = useState(null);
   const [statsTab, setStatsTab] = useState('daily'); // 'daily' | 'weekly' | 'monthly'
   const [loadingStats, setLoadingStats] = useState(false);
-
+ 
   // Tournament list states
   const [tournaments, setTournaments] = useState([]);
   const [newTournamentName, setNewTournamentName] = useState('');
@@ -28,8 +28,8 @@ export default function AdminPage() {
   const [diagnostics, setDiagnostics] = useState(null);
   const [isDiagnosing, setIsDiagnosing] = useState(false);
   const [syncYear, setSyncYear] = useState('2026');
-  const [syncMonth, setSyncMonth] = useState('6');
-
+  const [syncMonth, setSyncMonth] = useState('7'); // Set default sync to July
+ 
   // Manual video registration state
   const [showAddForm, setShowAddForm] = useState(false);
   const [newVideoBulldogsPos, setNewVideoBulldogsPos] = useState('away'); // 'away' or 'home'
@@ -48,10 +48,22 @@ export default function AdminPage() {
     win_team: ''
   });
 
+  // Crawl targets management states
+  const [crawlTargets, setCrawlTargets] = useState([]);
+  const [loadingCrawlTargets, setLoadingCrawlTargets] = useState(false);
+  const [isTableMissing, setIsTableMissing] = useState(false);
+  const [newTarget, setNewTarget] = useState({
+    platform: 'youtube',
+    target_id: '',
+    team_division: '꿈나무부',
+    memo: ''
+  });
+  const [isAddingTarget, setIsAddingTarget] = useState(false);
+ 
   const fetchStats = async (pw) => {
     const pwToUse = pw || localStorage.getItem('gugu_admin_pw');
     if (!pwToUse) return;
-
+ 
     setLoadingStats(true);
     try {
       const res = await fetch('/api/admin/stats', {
@@ -75,22 +87,47 @@ export default function AdminPage() {
     }
   };
 
+  const fetchCrawlTargets = async (pw) => {
+    const pwToUse = pw || localStorage.getItem('gugu_admin_pw');
+    if (!pwToUse) return;
+
+    setLoadingCrawlTargets(true);
+    try {
+      const res = await fetch('/api/admin/crawl-targets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pwToUse, action: 'list' })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setCrawlTargets(data.targets || []);
+        setIsTableMissing(!!data.isTableMissing);
+      } else {
+        console.error('Failed to fetch crawl targets:', data.error);
+      }
+    } catch (e) {
+      console.error('Failed to fetch crawl targets:', e);
+    } finally {
+      setLoadingCrawlTargets(false);
+    }
+  };
+ 
   const handleLogin = async (pwToTry) => {
     const pw = pwToTry || password;
     if (!pw) return;
-
+ 
     setLoading(true);
     setError('');
-
+ 
     try {
       const res = await fetch('/api/admin/videos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password: pw })
       });
-
+ 
       const data = await res.json();
-
+ 
       if (res.ok && data.success) {
         setIsAuthenticated(true);
         setVideos(data.videos);
@@ -98,6 +135,7 @@ export default function AdminPage() {
         localStorage.setItem('gugu_admin_pw', pw);
         setPassword('');
         fetchStats(pw); // Load visitor statistics
+        fetchCrawlTargets(pw); // Load crawl targets
       } else {
         setError(data.error || '인증에 실패했습니다.');
         localStorage.removeItem('gugu_admin_pw');
@@ -108,7 +146,7 @@ export default function AdminPage() {
       setLoading(false);
     }
   };
-
+ 
   // Check localStorage for saved credentials
   useEffect(() => {
     const savedPassword = localStorage.getItem('gugu_admin_pw');
@@ -118,13 +156,85 @@ export default function AdminPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
+ 
   const handleLogout = () => {
     localStorage.removeItem('gugu_admin_pw');
     setIsAuthenticated(false);
     setVideos([]);
+    setCrawlTargets([]);
     setMessage('');
   };
+
+  const handleAddCrawlTarget = async (e) => {
+    e.preventDefault();
+    if (!newTarget.target_id.trim()) {
+      setError('수집 대상 ID 또는 핸들을 입력해 주세요.');
+      return;
+    }
+    setIsAddingTarget(true);
+    setError('');
+    setMessage('');
+
+    const savedPassword = localStorage.getItem('gugu_admin_pw');
+
+    try {
+      const res = await fetch('/api/admin/crawl-targets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          password: savedPassword,
+          action: 'add',
+          ...newTarget
+        })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setMessage('수집 채널이 정상적으로 추가되었습니다.');
+        setNewTarget({
+          platform: 'youtube',
+          target_id: '',
+          team_division: '꿈나무부',
+          memo: ''
+        });
+        fetchCrawlTargets(savedPassword);
+      } else {
+        setError(data.error || '수집 채널 추가에 실패했습니다.');
+      }
+    } catch (err) {
+      setError('서버 통신 중 오류가 발생했습니다.');
+    } finally {
+      setIsAddingTarget(false);
+    }
+  };
+
+  const handleDeleteCrawlTarget = async (id, name) => {
+    if (!confirm("'" + name + "' 채널 수집 주소를 삭제하시겠습니까?")) return;
+    setError('');
+    setMessage('');
+
+    const savedPassword = localStorage.getItem('gugu_admin_pw');
+
+    try {
+      const res = await fetch('/api/admin/crawl-targets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          password: savedPassword,
+          action: 'delete',
+          id
+        })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setMessage('수집 채널이 정상적으로 삭제되었습니다.');
+        fetchCrawlTargets(savedPassword);
+      } else {
+        setError(data.error || '수집 채널 삭제에 실패했습니다.');
+      }
+    } catch (err) {
+      setError('서버 통신 중 오류가 발생했습니다.');
+    }
+  };;
 
   const handleSyncVideos = async () => {
     setIsRefreshing(true);
@@ -557,12 +667,429 @@ export default function AdminPage() {
     );
   };
 
-  const filteredVideos = videos.filter(v => {
-    if (filterType === 'pending') {
-      return v.team_division === '미분류' || v.parsed_status === 'pending';
-    }
-    return true;
-  });
+  const filteredVideos = videos;
+
+  const renderCrawlTargetsWorkspace = () => {
+    return (
+      <div className="space-y-6 animate-fadeIn">
+        {/* Supabase table missing warning */}
+        {isTableMissing && (
+          <div className="bg-red-955/20 p-5 rounded-3xl border border-red-500/15 text-red-300 space-y-3 leading-relaxed">
+            <div className="flex items-center gap-2 font-extrabold text-sm text-red-400">
+              <ShieldAlert className="w-5 h-5 shrink-0" />
+              <span>[데이터베이스 경고] crawl_targets 테이블이 누락되었습니다.</span>
+            </div>
+            <p className="text-xs">
+              현재 Supabase 연동 모드이지만 수집 타겟 관리 테이블이 데이터베이스에 생성되지 않았습니다.<br />
+              아래 SQL 쿼리를 복사하여 Supabase 대시보드의 <strong>SQL Editor</strong>에서 실행하신 후에 이 페이지를 새로고침(F5) 해주세요.
+            </p>
+            <div className="relative">
+              <pre className="p-3 bg-black/50 rounded-2xl text-[10px] font-mono text-gray-400 overflow-x-auto select-all">
+{`CREATE TABLE IF NOT EXISTS crawl_targets (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  platform VARCHAR(50) NOT NULL,
+  target_id VARCHAR(255) NOT NULL,
+  team_division VARCHAR(100) NOT NULL,
+  memo VARCHAR(255),
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- RLS 및 권한 설정
+ALTER TABLE crawl_targets ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow public read access to crawl_targets" ON crawl_targets FOR SELECT USING (true);`}
+              </pre>
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText("CREATE TABLE IF NOT EXISTS crawl_targets (\n  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,\n  platform VARCHAR(50) NOT NULL,\n  target_id VARCHAR(255) NOT NULL,\n  team_division VARCHAR(100) NOT NULL,\n  memo VARCHAR(255),\n  created_at TIMESTAMPTZ DEFAULT now()\n);\n\nALTER TABLE crawl_targets ENABLE ROW LEVEL SECURITY;\nCREATE POLICY \"Allow public read access to crawl_targets\" ON crawl_targets FOR SELECT USING (true);");
+                  alert('SQL 쿼리가 클립보드에 복사되었습니다.');
+                }}
+                className="absolute top-2 right-2 flex items-center gap-1 px-2.5 py-1.5 bg-gray-800 hover:bg-gray-700 text-[10px] font-bold text-gray-300 hover:text-gray-100 rounded-lg border border-gray-700 transition-colors cursor-pointer"
+              >
+                <Copy className="w-3 h-3" /> 복사하기
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Target input Form */}
+        <div className="glass-card p-6 rounded-3xl border border-gray-700/50 space-y-4">
+          <h3 className="text-sm md:text-base font-extrabold text-gray-100 flex items-center gap-2">
+            <Radio className="w-4 h-4 text-primary animate-pulse" />
+            <span>새로운 경기 수집 채널/주소 추가</span>
+          </h3>
+          
+          <form onSubmit={handleAddCrawlTarget} className="grid grid-cols-1 sm:grid-cols-4 gap-4 items-end">
+            <div className="space-y-1">
+              <label className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">수집 플랫폼</label>
+              <select
+                value={newTarget.platform}
+                onChange={(e) => setNewTarget(prev => ({ ...prev, platform: e.target.value }))}
+                className="w-full px-3 py-2.5 bg-gray-955 border border-gray-750 rounded-xl text-xs md:text-sm text-gray-300 outline-none focus:border-primary/20"
+              >
+                <option value="youtube">YouTube (유튜브)</option>
+                <option value="soop">SOOP (아프리카TV)</option>
+              </select>
+            </div>
+            
+            <div className="space-y-1">
+              <label className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">
+                {newTarget.platform === 'youtube' ? '채널 ID 또는 핸들 (예: @username)' : 'BJ ID (예: pik7688)'}
+              </label>
+              <input
+                type="text"
+                required
+                placeholder={newTarget.platform === 'youtube' ? 'UC... 또는 @핸들' : 'soop 아이디'}
+                value={newTarget.target_id}
+                onChange={(e) => setNewTarget(prev => ({ ...prev, target_id: e.target.value }))}
+                className="w-full px-3.5 py-2.5 bg-gray-955 border border-gray-750 rounded-xl text-xs md:text-sm text-gray-200 outline-none focus:border-primary/20"
+              />
+            </div>
+            
+            <div className="space-y-1">
+              <label className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">분류할 부서</label>
+              <select
+                value={newTarget.team_division}
+                onChange={(e) => setNewTarget(prev => ({ ...prev, team_division: e.target.value }))}
+                className="w-full px-3 py-2.5 bg-gray-955 border border-gray-750 rounded-xl text-xs md:text-sm text-gray-300 outline-none focus:border-primary/20"
+              >
+                <option value="새싹부">새싹부</option>
+                <option value="꿈나무부">꿈나무부</option>
+                <option value="유소년부">유소년부</option>
+                <option value="구구불독스">구구불독스</option>
+              </select>
+            </div>
+            
+            <div className="space-y-1">
+              <label className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">관리자 메모</label>
+              <input
+                type="text"
+                placeholder="예: 꿈나무부 공식채널"
+                value={newTarget.memo}
+                onChange={(e) => setNewTarget(prev => ({ ...prev, memo: e.target.value }))}
+                className="w-full px-3.5 py-2.5 bg-gray-955 border border-gray-750 rounded-xl text-xs md:text-sm text-gray-202 outline-none focus:border-primary/20"
+              />
+            </div>
+            
+            <div className="sm:col-span-4 flex justify-end">
+              <button
+                type="submit"
+                disabled={isAddingTarget}
+                className="flex items-center gap-1.5 px-5 py-2.5 bg-primary hover:bg-primary-hover text-dark-bg font-bold text-xs md:text-sm rounded-xl transition-all duration-300 shadow-md disabled:opacity-50 active:scale-95 cursor-pointer"
+              >
+                {isAddingTarget ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5 text-dark-bg" />}
+                수집 대상 등록
+              </button>
+            </div>
+          </form>
+        </div>
+
+        {/* Target List Grid/Table */}
+        <div className="glass-card p-6 rounded-3xl border border-gray-700/50 space-y-4">
+          <h3 className="text-sm md:text-base font-extrabold text-gray-100">
+            수집 채널 및 BJ 목록 ({crawlTargets.length}개)
+          </h3>
+          
+          {loadingCrawlTargets ? (
+            <div className="py-12 flex justify-center items-center text-gray-400 gap-2">
+              <Loader2 className="w-5 h-5 animate-spin text-primary" />
+              <span>수집 목록을 불러오는 중...</span>
+            </div>
+          ) : crawlTargets.length > 0 ? (
+            <div className="overflow-x-auto border border-gray-800 rounded-2xl">
+              <table className="w-full border-collapse text-left text-xs md:text-sm">
+                <thead>
+                  <tr className="bg-gray-955/80 border-b border-gray-800 text-gray-400 font-extrabold">
+                    <th className="p-4">플랫폼</th>
+                    <th className="p-4">수집 주소/ID</th>
+                    <th className="p-4">매핑 부서</th>
+                    <th className="p-4">메모</th>
+                    <th className="p-4 text-center w-20">삭제</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-800 bg-gray-900/10">
+                  {crawlTargets.map((target) => (
+                    <tr key={target.id} className="hover:bg-gray-800/20 text-gray-300">
+                      <td className="p-4">
+                        <span className={`px-2 py-0.5 rounded font-extrabold text-[10px] uppercase border ${
+                          target.platform === 'youtube'
+                            ? 'bg-red-955/20 border-red-500/30 text-red-400'
+                            : 'bg-emerald-955/20 border-emerald-500/30 text-emerald-400'
+                        }`}>
+                          {target.platform}
+                        </span>
+                      </td>
+                      <td className="p-4 font-mono font-bold text-gray-200">
+                        {target.platform === 'youtube' ? (
+                          <a
+                            href={target.target_id.startsWith('UC') 
+                              ? `https://youtube.com/channel/${target.target_id}` 
+                              : `https://youtube.com/${target.target_id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:underline hover:text-primary transition-all flex items-center gap-1.5"
+                          >
+                            {target.target_id} ↗
+                          </a>
+                        ) : (
+                          <a
+                            href={`https://vod.sooplive.co.kr/channel/${target.target_id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:underline hover:text-primary transition-all flex items-center gap-1.5"
+                          >
+                            {target.target_id} ↗
+                          </a>
+                        )}
+                      </td>
+                      <td className="p-4">
+                        <span className="font-bold text-gray-100">{target.team_division}</span>
+                      </td>
+                      <td className="p-4 text-gray-400">
+                        {target.memo || '-'}
+                      </td>
+                      <td className="p-4 text-center">
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteCrawlTarget(target.id, target.target_id)}
+                          className="p-2 bg-red-955/20 border border-red-500/20 hover:bg-red-955/40 text-red-400 hover:text-red-300 rounded-lg transition-all cursor-pointer"
+                          title="삭제"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="py-12 text-center text-gray-500">
+              등록된 수집 채널/주소가 없습니다.
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const renderVideoEditorWorkspace = () => {
+    return filteredVideos.length > 0 ? (
+      <div className="space-y-4">
+        {filteredVideos.map((video) => {
+          const isSaving = savingId === video.id;
+
+          return (
+            <div 
+              key={video.id} 
+              className="glass-card p-5 rounded-3xl border border-gray-700/50 flex flex-col md:flex-row gap-5 items-start"
+            >
+              {/* Aspect ratio video thumbnail */}
+              <div className="relative aspect-video w-full md:w-56 rounded-2xl overflow-hidden shrink-0 bg-gray-900">
+                <img 
+                  src={video.thumbnail_url} 
+                  alt="" 
+                  className="object-cover w-full h-full"
+                />
+                <div className="absolute top-2 left-2 px-2 py-0.5 rounded text-[10px] font-bold bg-black/60 border border-gray-700 uppercase">
+                  {video.source}
+                </div>
+              </div>
+
+              {/* Form fields for metadata editing */}
+              <div className="flex-grow w-full space-y-4">
+                {/* Title input */}
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">영상 제목</label>
+                  <input
+                    type="text"
+                    value={video.title || ''}
+                    onChange={(e) => handleInputChange(video.id, 'title', e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-gray-955 border border-gray-750 rounded-xl text-sm text-gray-200 outline-none focus:border-primary/20 transition-colors"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {/* Team select dropdown */}
+                  <div className="space-y-1">
+                    <label className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">부서 분류</label>
+                    <select
+                      value={video.team_division || '미분류'}
+                      onChange={(e) => handleInputChange(video.id, 'team_division', e.target.value)}
+                      className="w-full px-3 py-2.5 bg-gray-955 border border-gray-750 text-gray-300 focus:border-primary/20 rounded-xl text-xs md:text-sm outline-none"
+                    >
+                      <option value="미분류">미분류 (대기)</option>
+                      <option value="새싹부">새싹부</option>
+                      <option value="꿈나무부">꿈나무부</option>
+                      <option value="꿈나무A">꿈나무A</option>
+                      <option value="꿈나무B">꿈나무B</option>
+                      <option value="유소년부">유소년부</option>
+                      <option value="구구불독스">구구불독스</option>
+                    </select>
+                  </div>
+
+                  {/* Tournament field */}
+                  <div className="space-y-1">
+                    <label className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">대회명</label>
+                    <select
+                      value={video.tournament || ''}
+                      onChange={(e) => handleInputChange(video.id, 'tournament', e.target.value)}
+                      className="w-full px-3 py-2.5 bg-gray-955 border border-gray-750 rounded-xl text-xs md:text-sm text-gray-105 outline-none focus:border-primary/20"
+                    >
+                      <option value="">대회 없음 (친선/기타)</option>
+                      {tournaments.map((t) => (
+                        <option key={t} value={t}>
+                          {t}
+                        </option>
+                      ))}
+                      {video.tournament && !tournaments.includes(video.tournament) && (
+                        <option value={video.tournament}>{video.tournament} (직접 입력됨)</option>
+                      )}
+                    </select>
+                  </div>
+
+                  {/* Game Date field */}
+                  <div className="space-y-1">
+                    <label className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">경기 일자</label>
+                    <input
+                      type="date"
+                      value={video.published_at ? video.published_at.substring(0, 10) : ''}
+                      onChange={(e) => handleInputChange(video.id, 'published_at', e.target.value)}
+                      style={{ colorScheme: 'light' }}
+                      className="w-full px-3 py-2.5 bg-gray-955 border border-gray-750 rounded-xl text-xs md:text-sm text-gray-100 outline-none focus:border-primary/20"
+                    />
+                  </div>
+                </div>
+
+                {/* Score results row */}
+                <div className="bg-gray-900 p-4 rounded-2xl border border-gray-800 space-y-3">
+                  <h5 className="text-xs font-bold text-gray-400">📊 경기 결과 입력 (상대팀 및 스코어)</h5>
+                  
+                  {(() => {
+                    const isBulldogsHome = video.home_team === '구구불독스';
+                    const bulldogsPos = isBulldogsHome ? 'home' : 'away';
+                    const bulldogsScore = isBulldogsHome ? (video.home_score !== null ? video.home_score : '') : (video.away_score !== null ? video.away_score : '');
+                    const opponentScore = isBulldogsHome ? (video.away_score !== null ? video.away_score : '') : (video.home_score !== null ? video.home_score : '');
+                    const opponentName = video.opponent || '';
+
+                    return (
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                          {/* 1. Opponent Team Name */}
+                          <div className="space-y-1 sm:col-span-1">
+                            <label className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">상대팀 이름</label>
+                            <input
+                              type="text"
+                              placeholder="예: 마포자이언츠"
+                              value={opponentName}
+                              onChange={(e) => handleGameResultChange(video.id, 'opponent', e.target.value, video)}
+                              className="w-full px-3 py-2 bg-gray-955 border border-gray-750 rounded-xl text-xs text-gray-100 outline-none focus:border-primary/20"
+                            />
+                          </div>
+
+                          {/* 2. Bulldogs position (Home/Away) */}
+                          <div className="space-y-1 sm:col-span-1">
+                            <label className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">구구불독스 위치</label>
+                            <select
+                              value={bulldogsPos}
+                              onChange={(e) => handleGameResultChange(video.id, 'position', e.target.value, video)}
+                              className="w-full px-3 py-2.5 bg-gray-955 border border-gray-750 rounded-xl text-xs text-gray-100 outline-none focus:border-primary/20"
+                            >
+                              <option value="away">원정 (선공)</option>
+                              <option value="home">홈 (후공)</option>
+                            </select>
+                          </div>
+
+                          {/* 3. Scores */}
+                          <div className="grid grid-cols-2 gap-3 sm:col-span-1">
+                            <div className="space-y-1">
+                              <label className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">불독스 점수</label>
+                              <input
+                                type="number"
+                                placeholder="예: 8"
+                                value={bulldogsScore}
+                                onChange={(e) => handleGameResultChange(video.id, 'bulldogs_score', e.target.value, video)}
+                                className="w-full px-3 py-2 bg-gray-955 border border-gray-750 rounded-xl text-xs text-gray-100 outline-none focus:border-primary/20"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">상대팀 점수</label>
+                              <input
+                                type="number"
+                                placeholder="예: 5"
+                                value={opponentScore}
+                                onChange={(e) => handleGameResultChange(video.id, 'opponent_score', e.target.value, video)}
+                                className="w-full px-3 py-2 bg-gray-955 border border-gray-750 rounded-xl text-xs text-gray-105 outline-none focus:border-primary/20"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="pt-2 border-t border-gray-800">
+                          <div className="space-y-1 max-w-md">
+                            <label className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">승리 팀 이름 (점수 입력 시 자동 계산)</label>
+                            <input
+                              type="text"
+                              placeholder="예: 구구불독스 (점수 입력 시 자동 입력되며, 변경 가능)"
+                              value={video.win_team || ''}
+                              onChange={(e) => handleGameResultChange(video.id, 'win_team', e.target.value, video)}
+                              className="w-full px-3 py-2 bg-gray-955 border border-gray-750 rounded-xl text-xs text-gray-100 outline-none focus:border-primary/20"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+
+                {/* Action buttons */}
+                <div className="flex justify-between items-center pt-2 border-t border-gray-800">
+                  <span className="text-[10px] text-gray-400 flex flex-col gap-0.5">
+                    <span>원본 영상 ID: <code className="text-gray-400 font-mono">{video.source_video_id}</code></span>
+                    <span>등록 일시: <span className="text-gray-400 font-mono">{new Date(video.published_at).toLocaleString('ko-KR')}</span></span>
+                  </span>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteVideo(video.id, video.title)}
+                      disabled={isSaving}
+                      className="flex items-center gap-1.5 px-3 py-2 bg-red-955/20 border border-red-500/20 hover:bg-red-955/40 text-red-400 font-bold text-xs md:text-sm rounded-xl transition-all duration-300 disabled:opacity-50 active:scale-95 cursor-pointer"
+                    >
+                      삭제하기
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleUpdateVideo(video)}
+                      disabled={isSaving}
+                      className="flex items-center gap-1.5 px-4 py-2 bg-primary hover:bg-primary-hover text-dark-bg font-bold text-xs md:text-sm rounded-xl transition-all duration-300 disabled:opacity-50 shadow-md active:scale-95 cursor-pointer"
+                    >
+                      {isSaving ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          저장 중...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="w-3.5 h-3.5" />
+                          저장하기
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    ) : (
+      <div className="w-full py-20 bg-gray-900 border border-gray-800 rounded-3xl flex flex-col items-center justify-center text-center p-6 space-y-2">
+        <CheckCircle className="w-10 h-10 text-primary opacity-50" />
+        <h4 className="text-sm font-bold text-gray-400">경기 영상이 없습니다</h4>
+        <p className="text-xs text-gray-400">등록된 영상이 존재하지 않습니다.</p>
+      </div>
+    );
+  };
 
   // Login Form render
   if (!isAuthenticated) {
@@ -1054,6 +1581,15 @@ export default function AdminPage() {
                         )}
                       </div>
 
+                      <div className="flex items-center gap-1.5">
+                        <span>수집 주소(crawl_targets) 테이블 상태:</span>
+                        {diagnostics.diagnostics.crawlTargetsTable?.success ? (
+                          <span className="text-emerald-400 font-bold">정상</span>
+                        ) : (
+                          <span className="text-red-400 font-bold">오류 ({diagnostics.diagnostics.crawlTargetsTable?.error})</span>
+                        )}
+                      </div>
+
                       {diagnostics.diagnostics.deletedVideosTable?.code === '42P01' && (
                         <div className="bg-red-955/20 p-3 rounded-lg border border-red-500/15 text-red-300 space-y-1.5 leading-relaxed">
                           <div><strong>해결 방법 (삭제 추적 테이블 미생성):</strong> Supabase SQL Editor에서 아래 SQL을 실행하여 deleted_videos 테이블을 생성해 주세요.</div>
@@ -1074,6 +1610,26 @@ export default function AdminPage() {
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   created_at TIMESTAMPTZ DEFAULT now()
 );`}
+                          </pre>
+                        </div>
+                      )}
+
+                      {diagnostics.diagnostics.crawlTargetsTable?.code === '42P01' && (
+                        <div className="bg-red-955/20 p-3 rounded-lg border border-red-500/15 text-red-300 space-y-1.5 leading-relaxed">
+                          <div><strong>해결 방법 (수집 주소 테이블 미생성):</strong> Supabase SQL Editor에서 아래 SQL을 실행하여 crawl_targets 테이블을 생성해 주세요.</div>
+                          <pre className="p-2 bg-black/40 rounded text-[10px] font-mono text-gray-400 overflow-x-auto select-all">
+{`CREATE TABLE IF NOT EXISTS crawl_targets (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  platform VARCHAR(50) NOT NULL,
+  target_id VARCHAR(255) NOT NULL,
+  team_division VARCHAR(100) NOT NULL,
+  memo VARCHAR(255),
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- RLS 활성화 및 조회 권한 추가
+ALTER TABLE crawl_targets ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow public read access to crawl_targets" ON crawl_targets FOR SELECT USING (true);`}
                           </pre>
                         </div>
                       )}
@@ -1329,16 +1885,6 @@ ALTER TABLE tournaments DISABLE ROW LEVEL SECURITY;`}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex gap-2 p-1 bg-gray-900 border border-gray-700 rounded-2xl w-fit">
             <button
-              onClick={() => setFilterType('pending')}
-              className={`px-4 py-2 rounded-xl text-xs md:text-sm font-semibold transition-all duration-200 ${
-                filterType === 'pending'
-                  ? 'bg-primary text-dark-bg shadow-md'
-                  : 'text-gray-400 hover:text-gray-200'
-              }`}
-            >
-              대기중 / 미분류 ({videos.filter(v => v.team_division === '미분류' || v.parsed_status === 'pending').length})
-            </button>
-            <button
               onClick={() => setFilterType('all')}
               className={`px-4 py-2 rounded-xl text-xs md:text-sm font-semibold transition-all duration-200 ${
                 filterType === 'all'
@@ -1346,246 +1892,32 @@ ALTER TABLE tournaments DISABLE ROW LEVEL SECURITY;`}
                   : 'text-gray-400 hover:text-gray-200'
               }`}
             >
-              전체 영상 ({videos.length})
+              경기 영상 편집/목록 ({videos.length})
+            </button>
+            <button
+              onClick={() => setFilterType('targets')}
+              className={`px-4 py-2 rounded-xl text-xs md:text-sm font-semibold transition-all duration-200 ${
+                filterType === 'targets'
+                  ? 'bg-primary text-dark-bg shadow-md'
+                  : 'text-gray-400 hover:text-gray-200'
+              }`}
+            >
+              수집 채널/주소 관리 ({crawlTargets.length})
             </button>
           </div>
 
-          <div className="text-xs text-gray-500">
-            총 <strong className="text-gray-300 font-bold">{filteredVideos.length}건</strong>의 비디오가 필터링되었습니다.
+          <div className="text-xs text-gray-400">
+            {filterType === 'targets' ? (
+              <span>총 <strong className="text-gray-300 font-bold">{crawlTargets.length}개</strong>의 수집 채널이 등록되어 있습니다.</span>
+            ) : (
+              <span>총 <strong className="text-gray-300 font-bold">{filteredVideos.length}건</strong>의 비디오가 목록에 표시됩니다.</span>
+            )}
           </div>
         </div>
 
-        {/* Video Editor Cards Grid */}
-        {filteredVideos.length > 0 ? (
-          <div className="space-y-4">
-            {filteredVideos.map((video) => {
-              const isSaving = savingId === video.id;
-              const isPending = video.team_division === '미분류';
-
-              return (
-                <div 
-                  key={video.id} 
-                  className={`glass-card p-5 rounded-3xl border flex flex-col md:flex-row gap-5 items-start ${
-                    isPending ? 'border-amber-500/20 bg-amber-950/5' : ''
-                  }`}
-                >
-                  {/* Aspect ratio video thumbnail */}
-                  <div className="relative aspect-video w-full md:w-56 rounded-2xl overflow-hidden shrink-0 bg-gray-900">
-                    <img 
-                      src={video.thumbnail_url} 
-                      alt="" 
-                      className="object-cover w-full h-full"
-                    />
-                    <div className="absolute top-2 left-2 px-2 py-0.5 rounded text-[10px] font-bold bg-black/60 border border-gray-700 uppercase">
-                      {video.source}
-                    </div>
-                  </div>
-
-                  {/* Form fields for metadata editing */}
-                  <div className="flex-grow w-full space-y-4">
-                    {/* Title input */}
-                    <div className="space-y-1">
-                      <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">영상 제목</label>
-                      <input
-                        type="text"
-                        value={video.title || ''}
-                        onChange={(e) => handleInputChange(video.id, 'title', e.target.value)}
-                        className="w-full px-3.5 py-2.5 bg-gray-950 border border-gray-700 rounded-xl text-sm text-gray-200 outline-none focus:border-primary/20 transition-colors"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      {/* Team select dropdown */}
-                      <div className="space-y-1">
-                        <div className="flex items-center justify-between">
-                          <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">부서 분류</label>
-                          {isPending && (
-                            <span className="text-[9px] font-extrabold text-amber-500 flex items-center gap-0.5">
-                              <AlertTriangle className="w-2.5 h-2.5" /> 미분류
-                            </span>
-                          )}
-                        </div>
-                        <select
-                          value={video.team_division || '미분류'}
-                          onChange={(e) => handleInputChange(video.id, 'team_division', e.target.value)}
-                          className={`w-full px-3 py-2.5 bg-gray-950 border rounded-xl text-xs md:text-sm outline-none ${
-                            isPending 
-                              ? 'border-amber-500/30 text-amber-400' 
-                              : 'border-gray-700 text-gray-300 focus:border-primary/20'
-                          }`}
-                        >
-                          <option value="미분류">미분류 (대기)</option>
-                          <option value="새싹부">새싹부</option>
-                          <option value="꿈나무부">꿈나무부</option>
-                          <option value="꿈나무A">꿈나무A</option>
-                          <option value="꿈나무B">꿈나무B</option>
-                          <option value="유소년부">유소년부</option>
-                          <option value="구구불독스">구구불독스</option>
-                        </select>
-                      </div>
-
-                      {/* Tournament field */}
-                      <div className="space-y-1">
-                        <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">대회명</label>
-                        <select
-                          value={video.tournament || ''}
-                          onChange={(e) => handleInputChange(video.id, 'tournament', e.target.value)}
-                          className="w-full px-3 py-2.5 bg-gray-950 border border-gray-700 rounded-xl text-xs md:text-sm text-gray-300 outline-none focus:border-primary/20"
-                        >
-                          <option value="">대회 없음 (친선/기타)</option>
-                          {tournaments.map((t) => (
-                            <option key={t} value={t}>
-                              {t}
-                            </option>
-                          ))}
-                          {video.tournament && !tournaments.includes(video.tournament) && (
-                            <option value={video.tournament}>{video.tournament} (직접 입력됨)</option>
-                          )}
-                        </select>
-                      </div>
-
-                      {/* Game Date field */}
-                      <div className="space-y-1">
-                        <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">경기 일자</label>
-                        <input
-                          type="date"
-                          value={video.published_at ? video.published_at.substring(0, 10) : ''}
-                          onChange={(e) => handleInputChange(video.id, 'published_at', e.target.value)}
-                          style={{ colorScheme: 'light' }}
-                          className="w-full px-3 py-2.5 bg-gray-950 border border-gray-700 rounded-xl text-xs md:text-sm text-gray-300 outline-none focus:border-primary/20"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Score results row */}
-                    <div className="bg-gray-900 p-4 rounded-2xl border border-gray-700 space-y-3">
-                      <h5 className="text-xs font-bold text-gray-400">📊 경기 결과 입력 (상대팀 및 스코어)</h5>
-                      
-                      {(() => {
-                        const isBulldogsHome = video.home_team === '구구불독스';
-                        const bulldogsPos = isBulldogsHome ? 'home' : 'away';
-                        const bulldogsScore = isBulldogsHome ? (video.home_score !== null ? video.home_score : '') : (video.away_score !== null ? video.away_score : '');
-                        const opponentScore = isBulldogsHome ? (video.away_score !== null ? video.away_score : '') : (video.home_score !== null ? video.home_score : '');
-                        const opponentName = video.opponent || '';
-
-                        return (
-                          <div className="space-y-3">
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                              {/* 1. Opponent Team Name */}
-                              <div className="space-y-1 sm:col-span-1">
-                                <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">상대팀 이름</label>
-                                <input
-                                  type="text"
-                                  placeholder="예: 마포자이언츠"
-                                  value={opponentName}
-                                  onChange={(e) => handleGameResultChange(video.id, 'opponent', e.target.value, video)}
-                                  className="w-full px-3 py-2 bg-gray-950 border border-gray-700 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
-                                />
-                              </div>
-
-                              {/* 2. Bulldogs position (Home/Away) */}
-                              <div className="space-y-1 sm:col-span-1">
-                                <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">구구불독스 위치</label>
-                                <select
-                                  value={bulldogsPos}
-                                  onChange={(e) => handleGameResultChange(video.id, 'position', e.target.value, video)}
-                                  className="w-full px-3 py-2.5 bg-gray-950 border border-gray-700 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
-                                >
-                                  <option value="away">원정 (선공)</option>
-                                  <option value="home">홈 (후공)</option>
-                                </select>
-                              </div>
-
-                              {/* 3. Scores */}
-                              <div className="grid grid-cols-2 gap-3 sm:col-span-1">
-                                <div className="space-y-1">
-                                  <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">불독스 점수</label>
-                                  <input
-                                    type="number"
-                                    placeholder="예: 8"
-                                    value={bulldogsScore}
-                                    onChange={(e) => handleGameResultChange(video.id, 'bulldogs_score', e.target.value, video)}
-                                    className="w-full px-3 py-2 bg-gray-950 border border-gray-700 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
-                                  />
-                                </div>
-                                <div className="space-y-1">
-                                  <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">상대팀 점수</label>
-                                  <input
-                                    type="number"
-                                    placeholder="예: 5"
-                                    value={opponentScore}
-                                    onChange={(e) => handleGameResultChange(video.id, 'opponent_score', e.target.value, video)}
-                                    className="w-full px-3 py-2 bg-gray-950 border border-gray-700 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
-                                  />
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="pt-2 border-t border-gray-700">
-                              <div className="space-y-1 max-w-md">
-                                <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">승리 팀 이름 (점수 입력 시 자동 계산)</label>
-                                <input
-                                  type="text"
-                                  placeholder="예: 구구불독스 (점수 입력 시 자동 입력되며, 변경 가능)"
-                                  value={video.win_team || ''}
-                                  onChange={(e) => handleGameResultChange(video.id, 'win_team', e.target.value, video)}
-                                  className="w-full px-3 py-2 bg-gray-950 border border-gray-700 rounded-xl text-xs text-gray-300 outline-none focus:border-primary/20"
-                                />
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })()}
-                    </div>
-
-                    {/* Action buttons */}
-                    <div className="flex justify-between items-center pt-2 border-t border-gray-700">
-                      <span className="text-[10px] text-gray-500 flex flex-col gap-0.5">
-                        <span>원본 영상 ID: <code className="text-gray-400 font-mono">{video.source_video_id}</code></span>
-                        <span>등록 일시: <span className="text-gray-400 font-mono">{new Date(video.published_at).toLocaleString('ko-KR')}</span></span>
-                      </span>
-                      <div className="flex gap-2">
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteVideo(video.id, video.title)}
-                          disabled={isSaving}
-                          className="flex items-center gap-1.5 px-3 py-2 bg-red-955/20 border border-red-500/20 hover:bg-red-955/40 text-red-400 font-bold text-xs md:text-sm rounded-xl transition-all duration-300 disabled:opacity-50 active:scale-95 cursor-pointer"
-                        >
-                          삭제하기
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleUpdateVideo(video)}
-                          disabled={isSaving}
-                          className="flex items-center gap-1.5 px-4 py-2 bg-primary hover:bg-primary-hover text-dark-bg font-bold text-xs md:text-sm rounded-xl transition-all duration-300 disabled:opacity-50 shadow-md active:scale-95 cursor-pointer"
-                        >
-                          {isSaving ? (
-                            <>
-                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                              저장 중...
-                            </>
-                          ) : (
-                            <>
-                              <Save className="w-3.5 h-3.5" />
-                              저장하기
-                            </>
-                          )}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="w-full py-20 bg-gray-900 border border-gray-700 rounded-3xl flex flex-col items-center justify-center text-center p-6 space-y-2">
-            <CheckCircle className="w-10 h-10 text-primary opacity-50" />
-            <h4 className="text-sm font-bold text-gray-400">대기 중이거나 해당하는 영상이 없습니다</h4>
-            <p className="text-xs text-gray-500">모든 경기가 정상적으로 분류되었습니다.</p>
-          </div>
-        )}
-      </main>
+        {/* Dynamic Workspace Render */}
+        {filterType === 'targets' ? renderCrawlTargetsWorkspace() : renderVideoEditorWorkspace()}
+</main>
 
       <footer className="w-full py-8 mt-12 bg-black/40 border-t border-gray-700 px-4 text-center text-xs text-gray-600">
         <p>© 2026 구구불독스 플레이북 관리 시스템</p>
