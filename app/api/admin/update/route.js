@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { updateVideo } from '@/lib/db';
+import { revalidatePath } from 'next/cache';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,6 +31,12 @@ export async function POST(request) {
     });
 
     if (success) {
+      try {
+        revalidatePath('/');
+        revalidatePath('/admin');
+      } catch (e) {
+        console.warn('Failed to revalidate paths:', e);
+      }
       return NextResponse.json({ 
         success: true, 
         message: '경기가 성공적으로 업데이트되었습니다.' 

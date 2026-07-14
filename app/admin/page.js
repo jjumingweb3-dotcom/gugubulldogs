@@ -2,7 +2,8 @@
  
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Home, LogOut, ShieldAlert, CheckCircle, AlertTriangle, Save, Loader2, Plus, X, RefreshCw, BarChart3, Radio, Trash2, Copy } from 'lucide-react';
+import { Home, LogOut, ShieldAlert, CheckCircle, AlertTriangle, Save, Loader2, Plus, X, RefreshCw, BarChart3, Radio, Trash2, Copy, ExternalLink } from 'lucide-react';
+import { formatDateInput } from '@/lib/utils';
  
 export default function AdminPage() {
   const [password, setPassword] = useState('');
@@ -40,7 +41,7 @@ export default function AdminPage() {
     team_division: '미분류',
     tournament: '',
     opponent: '',
-    published_at: new Date().toISOString().substring(0, 10), // YYYY-MM-DD
+    published_at: new Date(Date.now() + 9 * 60 * 60 * 1000).toISOString().substring(0, 10), // YYYY-MM-DD KST
     home_team: '',
     away_team: '구구불독스',
     home_score: '',
@@ -388,7 +389,7 @@ export default function AdminPage() {
           team_division: '미분류',
           tournament: '',
           opponent: '',
-          published_at: new Date().toISOString().substring(0, 10), // YYYY-MM-DD
+          published_at: new Date(Date.now() + 9 * 60 * 60 * 1000).toISOString().substring(0, 10), // YYYY-MM-DD KST
           home_team: '',
           away_team: '구구불독스',
           home_score: '',
@@ -431,7 +432,8 @@ export default function AdminPage() {
           away_team: video.away_team,
           home_score: video.home_score === '' || video.home_score === null || video.home_score === undefined ? null : Number(video.home_score),
           away_score: video.away_score === '' || video.away_score === null || video.away_score === undefined ? null : Number(video.away_score),
-          win_team: video.win_team
+          win_team: video.win_team,
+          published_at: video.published_at
         })
       });
 
@@ -669,6 +671,15 @@ export default function AdminPage() {
 
   const filteredVideos = videos;
 
+  // Get unique opponent teams from all videos for autocomplete
+  const existingOpponents = Array.from(
+    new Set(
+      videos
+        .map(v => v.opponent?.trim())
+        .filter(op => op && op !== '')
+    )
+  ).sort();
+
   const renderCrawlTargetsWorkspace = () => {
     return (
       <div className="space-y-6 animate-fadeIn">
@@ -885,22 +896,43 @@ CREATE POLICY "Allow public read access to crawl_targets" ON crawl_targets FOR S
               className="glass-card p-5 rounded-3xl border border-gray-700/50 flex flex-col md:flex-row gap-5 items-start"
             >
               {/* Aspect ratio video thumbnail */}
-              <div className="relative aspect-video w-full md:w-56 rounded-2xl overflow-hidden shrink-0 bg-gray-900">
+              <a 
+                href={video.url} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="relative aspect-video w-full md:w-56 rounded-2xl overflow-hidden shrink-0 bg-gray-900 group block cursor-pointer"
+                title="원본 영상 보기 (새 창)"
+              >
                 <img 
                   src={video.thumbnail_url} 
                   alt="" 
-                  className="object-cover w-full h-full"
+                  className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-305"
                 />
                 <div className="absolute top-2 left-2 px-2 py-0.5 rounded text-[10px] font-bold bg-black/60 border border-gray-700 uppercase">
                   {video.source}
                 </div>
-              </div>
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-dark-bg shadow-lg transform scale-90 group-hover:scale-100 transition-transform duration-300">
+                    <ExternalLink className="w-5 h-5" />
+                  </div>
+                </div>
+              </a>
 
               {/* Form fields for metadata editing */}
               <div className="flex-grow w-full space-y-4">
                 {/* Title input */}
                 <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">영상 제목</label>
+                  <div className="flex items-center justify-between">
+                    <label className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">영상 제목</label>
+                    <a 
+                      href={video.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-xs text-primary hover:text-primary-hover flex items-center gap-1 font-semibold transition-colors duration-200 cursor-pointer"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" /> 영상 바로가기
+                    </a>
+                  </div>
                   <input
                     type="text"
                     value={video.title || ''}
@@ -953,7 +985,7 @@ CREATE POLICY "Allow public read access to crawl_targets" ON crawl_targets FOR S
                     <label className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">경기 일자</label>
                     <input
                       type="date"
-                      value={video.published_at ? video.published_at.substring(0, 10) : ''}
+                      value={formatDateInput(video.published_at)}
                       onChange={(e) => handleInputChange(video.id, 'published_at', e.target.value)}
                       style={{ colorScheme: 'light' }}
                       className="w-full px-3 py-2.5 bg-gray-955 border border-gray-750 rounded-xl text-xs md:text-sm text-gray-100 outline-none focus:border-primary/20"
@@ -978,13 +1010,14 @@ CREATE POLICY "Allow public read access to crawl_targets" ON crawl_targets FOR S
                           {/* 1. Opponent Team Name */}
                           <div className="space-y-1 sm:col-span-1">
                             <label className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">상대팀 이름</label>
-                            <input
-                              type="text"
-                              placeholder="예: 마포자이언츠"
-                              value={opponentName}
-                              onChange={(e) => handleGameResultChange(video.id, 'opponent', e.target.value, video)}
-                              className="w-full px-3 py-2 bg-gray-955 border border-gray-750 rounded-xl text-xs text-gray-100 outline-none focus:border-primary/20"
-                            />
+                             <input
+                               type="text"
+                               list="opponents-list"
+                               placeholder="예: 마포자이언츠"
+                               value={opponentName}
+                               onChange={(e) => handleGameResultChange(video.id, 'opponent', e.target.value, video)}
+                               className="w-full px-3 py-2 bg-gray-955 border border-gray-750 rounded-xl text-xs text-gray-100 outline-none focus:border-primary/20"
+                             />
                           </div>
 
                           {/* 2. Bulldogs position (Home/Away) */}
@@ -1798,6 +1831,7 @@ ALTER TABLE tournaments DISABLE ROW LEVEL SECURITY;`}
                         <label className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">상대팀 이름</label>
                         <input
                           type="text"
+                          list="opponents-list"
                           placeholder="예: 동작리틀"
                           value={opponentName}
                           onChange={(e) => handleNewVideoGameResultChange('opponent', e.target.value)}
@@ -1917,7 +1951,14 @@ ALTER TABLE tournaments DISABLE ROW LEVEL SECURITY;`}
 
         {/* Dynamic Workspace Render */}
         {filterType === 'targets' ? renderCrawlTargetsWorkspace() : renderVideoEditorWorkspace()}
-</main>
+
+        {/* Datalist for autocomplete */}
+        <datalist id="opponents-list">
+          {existingOpponents.map((op) => (
+            <option key={op} value={op} />
+          ))}
+        </datalist>
+      </main>
 
       <footer className="w-full py-8 mt-12 bg-black/40 border-t border-gray-700 px-4 text-center text-xs text-gray-600">
         <p>© 2026 구구불독스 플레이북 관리 시스템</p>

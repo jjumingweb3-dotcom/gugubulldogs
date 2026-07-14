@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { addVideos } from '@/lib/db';
+import { revalidatePath } from 'next/cache';
 
 export const dynamic = 'force-dynamic';
 
@@ -144,6 +145,12 @@ export async function POST(request) {
     const addedCount = await addVideos([newVideo]);
 
     if (addedCount > 0) {
+      try {
+        revalidatePath('/');
+        revalidatePath('/admin');
+      } catch (e) {
+        console.warn('Failed to revalidate paths:', e);
+      }
       return NextResponse.json({ 
         success: true, 
         message: '새로운 영상이 성공적으로 수기 등록되었습니다.' 
