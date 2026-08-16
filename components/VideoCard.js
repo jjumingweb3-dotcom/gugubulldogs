@@ -81,37 +81,45 @@ export default function VideoCard({ video, onClick }) {
           {hasResult && (
             <div className="mt-2">
               {bulldogsResult.outcome === 'win' ? (
-                // GUGBULLDOGS WIN: High Visibility Emerald / Gold Victory Styling
-                <div className="flex items-center gap-1.5 bg-gradient-to-r from-emerald-950/80 via-emerald-900/60 to-emerald-950/80 border border-emerald-500/60 rounded-xl px-2.5 py-1.5 w-fit shadow-[0_0_15px_rgba(16,185,129,0.3)] animate-pulse-slow">
-                  <span className="text-[11px] font-black text-emerald-300 flex items-center gap-1 font-sans tracking-tight">
-                    <span>🏆</span>
-                    <span>{bulldogsResult.label}</span>
+                // GUGBULLDOGS WIN: Primary Blue Unified Theme (High legibility on light background)
+                <div className="flex items-center gap-1.5 bg-blue-50 border border-blue-200/80 rounded-xl px-2.5 py-1 w-fit shadow-xs">
+                  <span className="text-[11px] font-bold text-blue-700 flex items-center gap-1 font-sans">
+                    <span className="bg-blue-600 text-white px-1.5 py-0.5 rounded text-[10px] font-black tracking-tight">
+                      🏆 승
+                    </span>
+                    <span className="font-bold">{bulldogsResult.label}</span>
                     {hasScores && (
-                      <span className="bg-emerald-400 text-emerald-950 px-2 py-0.5 rounded-lg text-[10px] ml-1 font-black font-mono shadow">
+                      <span className="text-[10px] font-extrabold text-blue-600 font-mono ml-1">
                         {video.away_score} : {video.home_score}
                       </span>
                     )}
                   </span>
                 </div>
               ) : bulldogsResult.outcome === 'loss' ? (
-                // LOSS: Muted Rose/Red Styling
-                <div className="flex items-center gap-1.5 bg-rose-950/40 border border-rose-500/30 rounded-xl px-2.5 py-1 w-fit">
-                  <span className="text-[11px] font-bold text-rose-300 flex items-center gap-1 font-sans">
-                    <span>{bulldogsResult.label || (video.win_team ? `${video.win_team} 승` : '패')}</span>
+                // LOSS: Muted Slate Theme
+                <div className="flex items-center gap-1.5 bg-slate-100/80 border border-slate-200 rounded-xl px-2.5 py-1 w-fit">
+                  <span className="text-[11px] font-semibold text-slate-600 flex items-center gap-1 font-sans">
+                    <span className="bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded text-[10px] font-bold">
+                      패
+                    </span>
+                    <span>{bulldogsResult.label || '패'}</span>
                     {hasScores && (
-                      <span className="bg-rose-900/60 text-rose-200 px-2 py-0.5 rounded-lg text-[10px] ml-1 font-bold font-mono">
+                      <span className="text-[10px] font-bold text-slate-500 font-mono ml-1">
                         {video.away_score} : {video.home_score}
                       </span>
                     )}
                   </span>
                 </div>
               ) : bulldogsResult.outcome === 'draw' ? (
-                // DRAW: Amber/Yellow Styling
-                <div className="flex items-center gap-1.5 bg-amber-950/40 border border-amber-500/30 rounded-xl px-2.5 py-1 w-fit">
-                  <span className="text-[11px] font-bold text-amber-300 flex items-center gap-1 font-sans">
-                    <span>🤝 {bulldogsResult.label || '무승부'}</span>
+                // DRAW: Soft Light Slate Theme
+                <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1 w-fit">
+                  <span className="text-[11px] font-semibold text-slate-500 flex items-center gap-1 font-sans">
+                    <span className="bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded text-[10px] font-bold">
+                      무
+                    </span>
+                    <span>무승부</span>
                     {hasScores && (
-                      <span className="bg-amber-900/60 text-amber-200 px-2 py-0.5 rounded-lg text-[10px] ml-1 font-bold font-mono">
+                      <span className="text-[10px] font-bold text-slate-500 font-mono ml-1">
                         {video.away_score} : {video.home_score}
                       </span>
                     )}
@@ -119,11 +127,11 @@ export default function VideoCard({ video, onClick }) {
                 </div>
               ) : (
                 // FALLBACK / GENERAL
-                <div className="flex items-center gap-1.5 bg-gray-800 border border-gray-700 rounded-xl px-2.5 py-1 w-fit">
-                  <span className="text-[11px] font-bold text-gray-300 flex items-center gap-1 font-sans">
+                <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1 w-fit">
+                  <span className="text-[11px] font-bold text-slate-600 flex items-center gap-1 font-sans">
                     <span>{video.win_team ? `🏆 ${video.win_team}` : '경기 결과'}</span>
                     {hasScores && (
-                      <span className="bg-gray-700 text-gray-200 px-2 py-0.5 rounded-lg text-[10px] ml-1 font-mono">
+                      <span className="text-[10px] font-bold text-slate-500 font-mono ml-1">
                         {video.away_score} : {video.home_score}
                       </span>
                     )}
