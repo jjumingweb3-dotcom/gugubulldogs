@@ -1,6 +1,6 @@
 import React from 'react';
 import { X, Calendar, Trophy, Users, ExternalLink, Play } from 'lucide-react';
-import { getDisplayTitle, formatDateFull } from '@/lib/utils';
+import { getDisplayTitle, formatDateFull, getBulldogsResult } from '@/lib/utils';
 
 export default function VideoDetailModal({ video, onClose }) {
   React.useEffect(() => {
@@ -26,6 +26,8 @@ export default function VideoDetailModal({ video, onClose }) {
   }, [onClose]);
 
   if (!video) return null;
+
+  const bulldogsResult = getBulldogsResult(video);
 
   const getDivisionBadgeColor = (division) => {
     switch (division) {
@@ -109,7 +111,15 @@ export default function VideoDetailModal({ video, onClose }) {
 
           {/* Match Result Scoreboard (Baseball Visitor vs Home concept) */}
           {video.home_score !== undefined && video.home_score !== null && video.away_score !== undefined && video.away_score !== null && (
-            <div className="bg-primary/5 border border-primary/30 rounded-2xl p-4 flex items-center justify-around text-center">
+            <div className={`border rounded-2xl p-4 flex items-center justify-around text-center transition-all ${
+              bulldogsResult.outcome === 'win'
+                ? 'bg-emerald-950/40 border-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.15)]'
+                : bulldogsResult.outcome === 'loss'
+                ? 'bg-rose-950/20 border-rose-500/30'
+                : bulldogsResult.outcome === 'draw'
+                ? 'bg-amber-950/20 border-amber-500/30'
+                : 'bg-primary/5 border-primary/30'
+            }`}>
               {/* Away (Visitor, Left) */}
               <div className="space-y-1 w-1/3">
                 <div className="text-[10px] text-gray-400 font-bold">원정팀 (초)</div>
@@ -124,18 +134,22 @@ export default function VideoDetailModal({ video, onClose }) {
                 <div className="text-2xl font-black text-gray-100 tracking-wider font-mono">
                   {video.away_score} : {video.home_score}
                 </div>
-                {video.win_team ? (
-                  <span className="text-[9px] bg-primary/25 text-primary px-1.5 py-0.5 rounded font-extrabold mt-1">
-                    {video.win_team === '무승부' || video.win_team.includes('무승부') ? video.win_team : `${video.win_team} 승`}
+                {bulldogsResult.outcome === 'win' ? (
+                  <span className="text-[10px] bg-emerald-500 text-emerald-950 px-2 py-0.5 rounded-lg font-black mt-1 shadow-sm flex items-center gap-1">
+                    🏆 {bulldogsResult.label || '승리'}
+                  </span>
+                ) : bulldogsResult.outcome === 'loss' ? (
+                  <span className="text-[9px] bg-rose-950/80 text-rose-300 border border-rose-500/30 px-1.5 py-0.5 rounded font-extrabold mt-1">
+                    {bulldogsResult.label || '패'}
+                  </span>
+                ) : bulldogsResult.outcome === 'draw' ? (
+                  <span className="text-[9px] bg-amber-950/80 text-amber-300 border border-amber-500/30 px-1.5 py-0.5 rounded font-extrabold mt-1">
+                    🤝 무승부
                   </span>
                 ) : (
-                  Number(video.home_score) === Number(video.away_score) ? (
-                    <span className="text-[9px] bg-gray-700 text-gray-100 px-1.5 py-0.5 rounded font-extrabold mt-1">무승부</span>
-                  ) : (
-                    <span className="text-[9px] bg-primary/25 text-primary px-1.5 py-0.5 rounded font-extrabold mt-1">
-                      {Number(video.home_score) > Number(video.away_score) ? '홈팀 승' : '원정팀 승'}
-                    </span>
-                  )
+                  <span className="text-[9px] bg-gray-800 text-gray-300 px-1.5 py-0.5 rounded font-extrabold mt-1">
+                    {video.win_team || '경기 결과'}
+                  </span>
                 )}
               </div>
 
@@ -148,6 +162,7 @@ export default function VideoDetailModal({ video, onClose }) {
               </div>
             </div>
           )}
+
 
           {/* Details Table */}
           <div className="bg-gray-900 border border-gray-700 rounded-2xl p-4 space-y-3.5 text-sm">

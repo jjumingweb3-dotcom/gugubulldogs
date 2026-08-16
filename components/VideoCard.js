@@ -1,6 +1,6 @@
 import React from 'react';
 import { Calendar, Trophy, Users, Play } from 'lucide-react';
-import { getDisplayTitle, formatDate } from '@/lib/utils';
+import { getDisplayTitle, formatDate, getBulldogsResult } from '@/lib/utils';
 
 export default function VideoCard({ video, onClick }) {
   // Get color styles for team divisions
@@ -20,6 +20,10 @@ export default function VideoCard({ video, onClick }) {
         return 'bg-slate-50 text-slate-700 border-slate-200';
     }
   };
+
+  const bulldogsResult = getBulldogsResult(video);
+  const hasScores = video.home_score !== undefined && video.home_score !== null && video.away_score !== undefined && video.away_score !== null;
+  const hasResult = bulldogsResult.outcome !== 'unknown' || video.win_team || hasScores;
 
   return (
     <div 
@@ -73,32 +77,63 @@ export default function VideoCard({ video, onClick }) {
             {getDisplayTitle(video)}
           </h3>
 
-          {/* Score Info */}
-          {(video.win_team || (video.home_score !== undefined && video.home_score !== null && video.away_score !== undefined && video.away_score !== null)) ? (
-            <div className="flex items-center gap-1.5 mt-2 bg-primary/10 border border-primary/20 rounded-xl px-2.5 py-1 w-fit">
-              <span className="text-[11px] font-bold text-primary flex items-center gap-1 font-sans">
-                {video.win_team ? (
-                  video.win_team === '무승부' || video.win_team.includes('무승부') ? (
-                    <>🤝 {video.win_team}</>
-                  ) : (
-                    <>🏆 {video.win_team.includes('승') ? video.win_team : `${video.win_team} 승`}</>
-                  )
-                ) : (
-                  Number(video.home_score) === Number(video.away_score) ? (
-                    <>🤝 무승부</>
-                  ) : (
-                    <>🏆 {Number(video.home_score) > Number(video.away_score) ? `${video.home_team || '홈팀'} 승` : `${video.away_team || '원정팀'} 승`}</>
-                  )
-                )}
-                {video.home_score !== undefined && video.home_score !== null && video.away_score !== undefined && video.away_score !== null && (
-                  <span className="bg-primary text-white px-2 py-0.5 rounded-lg text-[10px] ml-1.5 font-black font-mono shadow-sm">
-                    {video.away_score} : {video.home_score}
+          {/* Score & Match Result Info */}
+          {hasResult && (
+            <div className="mt-2">
+              {bulldogsResult.outcome === 'win' ? (
+                // GUGBULLDOGS WIN: High Visibility Emerald / Gold Victory Styling
+                <div className="flex items-center gap-1.5 bg-gradient-to-r from-emerald-950/80 via-emerald-900/60 to-emerald-950/80 border border-emerald-500/60 rounded-xl px-2.5 py-1.5 w-fit shadow-[0_0_15px_rgba(16,185,129,0.3)] animate-pulse-slow">
+                  <span className="text-[11px] font-black text-emerald-300 flex items-center gap-1 font-sans tracking-tight">
+                    <span>🏆</span>
+                    <span>{bulldogsResult.label}</span>
+                    {hasScores && (
+                      <span className="bg-emerald-400 text-emerald-950 px-2 py-0.5 rounded-lg text-[10px] ml-1 font-black font-mono shadow">
+                        {video.away_score} : {video.home_score}
+                      </span>
+                    )}
                   </span>
-                )}
-              </span>
+                </div>
+              ) : bulldogsResult.outcome === 'loss' ? (
+                // LOSS: Muted Rose/Red Styling
+                <div className="flex items-center gap-1.5 bg-rose-950/40 border border-rose-500/30 rounded-xl px-2.5 py-1 w-fit">
+                  <span className="text-[11px] font-bold text-rose-300 flex items-center gap-1 font-sans">
+                    <span>{bulldogsResult.label || (video.win_team ? `${video.win_team} 승` : '패')}</span>
+                    {hasScores && (
+                      <span className="bg-rose-900/60 text-rose-200 px-2 py-0.5 rounded-lg text-[10px] ml-1 font-bold font-mono">
+                        {video.away_score} : {video.home_score}
+                      </span>
+                    )}
+                  </span>
+                </div>
+              ) : bulldogsResult.outcome === 'draw' ? (
+                // DRAW: Amber/Yellow Styling
+                <div className="flex items-center gap-1.5 bg-amber-950/40 border border-amber-500/30 rounded-xl px-2.5 py-1 w-fit">
+                  <span className="text-[11px] font-bold text-amber-300 flex items-center gap-1 font-sans">
+                    <span>🤝 {bulldogsResult.label || '무승부'}</span>
+                    {hasScores && (
+                      <span className="bg-amber-900/60 text-amber-200 px-2 py-0.5 rounded-lg text-[10px] ml-1 font-bold font-mono">
+                        {video.away_score} : {video.home_score}
+                      </span>
+                    )}
+                  </span>
+                </div>
+              ) : (
+                // FALLBACK / GENERAL
+                <div className="flex items-center gap-1.5 bg-gray-800 border border-gray-700 rounded-xl px-2.5 py-1 w-fit">
+                  <span className="text-[11px] font-bold text-gray-300 flex items-center gap-1 font-sans">
+                    <span>{video.win_team ? `🏆 ${video.win_team}` : '경기 결과'}</span>
+                    {hasScores && (
+                      <span className="bg-gray-700 text-gray-200 px-2 py-0.5 rounded-lg text-[10px] ml-1 font-mono">
+                        {video.away_score} : {video.home_score}
+                      </span>
+                    )}
+                  </span>
+                </div>
+              )}
             </div>
-          ) : null}
+          )}
         </div>
+
 
         <div className="mt-4 pt-3 border-t border-gray-700 space-y-1.5 text-xs text-gray-400">
           {/* Match Info Badges */}
