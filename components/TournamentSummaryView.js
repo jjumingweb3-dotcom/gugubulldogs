@@ -87,64 +87,48 @@ export default function TournamentSummaryView({
 
   return (
     <div className="space-y-6 animate-fadeIn">
-      {/* Tournament Selection Header (Light Theme Optimized) */}
+      {/* Tournament Selection Header (Light Theme Optimized - Expanded Wrapped Grid Layout) */}
       <div className="bg-white border border-slate-200/80 rounded-3xl p-5 md:p-6 space-y-4 shadow-xs">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-primary">
-              <Trophy className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-base md:text-lg font-extrabold text-slate-800 flex items-center gap-2">
-                대회별 세부팀 결과 모아보기
-              </h2>
-              <p className="text-xs text-slate-500">
-                대회를 선택하시면 각 세부팀(새싹부, 꿈나무부, 유소년부 등)의 경기 결과를 확인하실 수 있습니다.
-              </p>
-            </div>
+        <div className="flex items-center gap-2.5">
+          <div className="w-10 h-10 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-primary shrink-0">
+            <Trophy className="w-5 h-5" />
           </div>
-
-          {/* Quick Dropdown Selector for Mobile */}
-          <div className="shrink-0 min-w-[220px]">
-            <select
-              value={activeTournament}
-              onChange={(e) => onSelectTournament(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 hover:border-primary text-slate-800 rounded-xl px-3.5 py-2.5 text-xs md:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary transition-all cursor-pointer"
-            >
-              {tournaments.map((t) => {
-                const count = videos.filter(v => v.tournament === t).length;
-                return (
-                  <option key={t} value={t}>
-                    {t} ({count}경기)
-                  </option>
-                );
-              })}
-            </select>
+          <div>
+            <h2 className="text-base md:text-lg font-extrabold text-slate-800 flex items-center gap-2">
+              대회별 세부팀 결과 모아보기
+            </h2>
+            <p className="text-xs text-slate-500">
+              아래 대회 목록 중 원하시는 대회를 선택하시면 각 세부팀(새싹부, 꿈나무부, 유소년부 등)의 경기 결과를 한눈에 확인하실 수 있습니다.
+            </p>
           </div>
         </div>
 
-        {/* Scrollable Tournament Chip Selector with Smooth Scroll Touch Bar */}
-        <div className="pt-2 border-t border-slate-100">
-          <div className="w-full overflow-x-auto py-1 no-scrollbar scroll-smooth">
-            <div className="flex items-center gap-2 min-w-max">
-              {tournaments.map((t) => {
-                const count = videos.filter(v => v.tournament === t).length;
-                const isSelected = activeTournament === t;
-                return (
-                  <button
-                    key={t}
-                    onClick={() => onSelectTournament(t)}
-                    className={`px-4 py-2 rounded-xl text-xs md:text-sm font-bold whitespace-nowrap border transition-all duration-200 cursor-pointer ${
-                      isSelected
-                        ? 'bg-primary text-white border-primary shadow-xs'
-                        : 'bg-slate-100/80 border-slate-200 text-slate-700 hover:bg-slate-200 hover:text-slate-900'
-                    }`}
-                  >
-                    {t} ({count})
-                  </button>
-                );
-              })}
-            </div>
+        {/* Fully Expanded Wrapped Grid Chips Layout (No Dropdown & No Horizontal Scroll Needed) */}
+        <div className="pt-3 border-t border-slate-100 space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              참가 대회 목록 ({tournaments.length}개 대회)
+            </span>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {tournaments.map((t) => {
+              const count = videos.filter(v => v.tournament === t).length;
+              const isSelected = activeTournament === t;
+              return (
+                <button
+                  key={t}
+                  onClick={() => onSelectTournament(t)}
+                  className={`px-3.5 py-2 rounded-xl text-xs md:text-sm font-bold border transition-all duration-200 cursor-pointer ${
+                    isSelected
+                      ? 'bg-primary text-white border-primary shadow-xs'
+                      : 'bg-slate-100/90 border-slate-200 text-slate-700 hover:bg-slate-200 hover:text-slate-900'
+                  }`}
+                >
+                  {t} ({count})
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>

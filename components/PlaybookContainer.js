@@ -247,11 +247,11 @@ export default function PlaybookContainer({ initialVideos, initialTournaments = 
                 />
               </div>
 
-              {/* Tournament Filter Chips */}
+              {/* Tournament Filter Chips (Always Expanded Wrapped Grid Layout) */}
               <div className="flex flex-col gap-3 pt-1">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold uppercase tracking-wider text-gray-400">대회별 경기</span>
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500">대회별 경기 ({tournaments.length}개 대회)</span>
                     {selectedTournament && (
                       <button
                         onClick={() => setViewMode('summary')}
@@ -262,82 +262,37 @@ export default function PlaybookContainer({ initialVideos, initialTournaments = 
                       </button>
                     )}
                   </div>
-                  {tournaments.length > 4 && (
-                    <button
-                      onClick={() => setIsTournamentExpanded(!isTournamentExpanded)}
-                      className="text-xs font-bold text-primary hover:text-primary-hover transition-colors flex items-center gap-1 cursor-pointer select-none"
-                    >
-                      {isTournamentExpanded ? '간단히 보기 ▴' : `더보기 (${tournaments.length}) ▾`}
-                    </button>
-                  )}
                 </div>
 
-                {isTournamentExpanded ? (
-                  // Wrapped Grid view when expanded
-                  <div className="flex flex-wrap gap-2 pb-1 animate-fadeIn">
-                    <button
-                      onClick={() => setSelectedTournament('')}
-                      className={`px-3.5 py-2 rounded-xl text-xs md:text-sm font-semibold whitespace-nowrap border transition-all duration-200 cursor-pointer ${
-                        !selectedTournament
-                          ? 'bg-primary text-dark-bg border-primary shadow-[0_0_10px_rgba(59,130,246,0.2)]'
-                          : 'bg-gray-800 border-gray-700 text-gray-300 hover:text-gray-100 hover:bg-gray-700'
-                      }`}
-                    >
-                      전체 대회 ({initialVideos.length})
-                    </button>
-                    {tournaments.map((t) => {
-                      const count = initialVideos.filter(v => v.tournament === t).length;
-                      return (
-                        <button
-                          key={t}
-                          onClick={() => setSelectedTournament(selectedTournament === t ? '' : t)}
-                          className={`px-3.5 py-2 rounded-xl text-xs md:text-sm font-semibold whitespace-nowrap border transition-all duration-200 cursor-pointer ${
-                            selectedTournament === t
-                              ? 'bg-primary text-dark-bg border-primary shadow-[0_0_10px_rgba(59,130,246,0.2)]'
-                              : 'bg-gray-800 border-gray-700 text-gray-300 hover:text-gray-100 hover:bg-gray-700'
-                          }`}
-                        >
-                          {t} ({count})
-                        </button>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  // Horizontal Scroll view when collapsed
-                  <div className="relative">
-                    {/* Gradient overlay to indicate scroll availability */}
-                    <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-dark-bg via-dark-bg/70 to-transparent pointer-events-none z-10" />
-                    
-                    <div className="flex overflow-x-auto gap-2 pb-2 scrollbar-none whitespace-nowrap select-none pr-12">
+                {/* Wrapped Grid view - All tournament chips visible & easily clickable */}
+                <div className="flex flex-wrap gap-2 pb-1 animate-fadeIn">
+                  <button
+                    onClick={() => setSelectedTournament('')}
+                    className={`px-3.5 py-2 rounded-xl text-xs md:text-sm font-semibold whitespace-nowrap border transition-all duration-200 cursor-pointer ${
+                      !selectedTournament
+                        ? 'bg-primary text-white border-primary shadow-xs'
+                        : 'bg-slate-100/90 border-slate-200 text-slate-700 hover:bg-slate-200 hover:text-slate-900'
+                    }`}
+                  >
+                    전체 대회 ({initialVideos.length})
+                  </button>
+                  {tournaments.map((t) => {
+                    const count = initialVideos.filter(v => v.tournament === t).length;
+                    return (
                       <button
-                        onClick={() => setSelectedTournament('')}
-                        className={`px-3.5 py-2 rounded-xl text-xs md:text-sm font-semibold whitespace-nowrap border transition-all duration-200 cursor-pointer shrink-0 ${
-                          !selectedTournament
-                            ? 'bg-primary text-dark-bg border-primary shadow-[0_0_10px_rgba(59,130,246,0.2)]'
-                            : 'bg-gray-800 border-gray-700 text-gray-300 hover:text-gray-100 hover:bg-gray-700'
+                        key={t}
+                        onClick={() => setSelectedTournament(selectedTournament === t ? '' : t)}
+                        className={`px-3.5 py-2 rounded-xl text-xs md:text-sm font-semibold border transition-all duration-200 cursor-pointer ${
+                          selectedTournament === t
+                            ? 'bg-primary text-white border-primary shadow-xs font-bold'
+                            : 'bg-slate-100/90 border-slate-200 text-slate-700 hover:bg-slate-200 hover:text-slate-900'
                         }`}
                       >
-                        전체 대회 ({initialVideos.length})
+                        {t} ({count})
                       </button>
-                      {tournaments.map((t) => {
-                        const count = initialVideos.filter(v => v.tournament === t).length;
-                        return (
-                          <button
-                            key={t}
-                            onClick={() => setSelectedTournament(selectedTournament === t ? '' : t)}
-                            className={`px-3.5 py-2 rounded-xl text-xs md:text-sm font-semibold whitespace-nowrap border transition-all duration-200 cursor-pointer shrink-0 ${
-                              selectedTournament === t
-                                ? 'bg-primary text-dark-bg border-primary shadow-[0_0_10px_rgba(59,130,246,0.2)]'
-                                : 'bg-gray-800 border-gray-700 text-gray-300 hover:text-gray-100 hover:bg-gray-700'
-                            }`}
-                          >
-                            {t} ({count})
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
+                    );
+                  })}
+                </div>
               </div>
 
               {/* Filtering Bar */}
