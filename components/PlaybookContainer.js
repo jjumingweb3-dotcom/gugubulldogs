@@ -160,7 +160,7 @@ export default function PlaybookContainer({ initialVideos, initialTournaments = 
           <div className="flex items-center gap-2">
             {/* Cheer Songs shortcut button */}
             <a 
-              href="https://youtu.be/Zhrza56Y-mQ?si=eYrzX3FpJIFgPHPB"
+              href="https://youtu.be/09Bhj-m_Rk0?si=eJogztCd6ysErtt7"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-primary/10 border border-primary/20 hover:bg-primary/20 text-xs md:text-sm font-semibold text-primary transition-all duration-300 active:scale-95 cursor-pointer"

@@ -28,8 +28,8 @@ export default function AdminPage() {
   const [showTournamentForm, setShowTournamentForm] = useState(false);
   const [diagnostics, setDiagnostics] = useState(null);
   const [isDiagnosing, setIsDiagnosing] = useState(false);
-  const [syncYear, setSyncYear] = useState('2026');
-  const [syncMonth, setSyncMonth] = useState('7'); // Set default sync to July
+  const [syncYear, setSyncYear] = useState(() => String(new Date().getFullYear()));
+  const [syncMonth, setSyncMonth] = useState(() => String(new Date().getMonth() + 1)); // Default to current month
  
   // Manual video registration state
   const [showAddForm, setShowAddForm] = useState(false);
@@ -1214,9 +1214,12 @@ CREATE POLICY "Allow public read access to crawl_targets" ON crawl_targets FOR S
                 onChange={(e) => setSyncYear(e.target.value)}
                 className="bg-gray-950 border border-gray-700 text-gray-100 font-semibold outline-none cursor-pointer rounded-lg px-2 py-0.5 text-[11px] hover:bg-gray-800 transition-colors"
               >
-                <option value="2024" style={{ backgroundColor: '#ffffff', color: '#0f172a' }}>2024년</option>
-                <option value="2025" style={{ backgroundColor: '#ffffff', color: '#0f172a' }}>2025년</option>
-                <option value="2026" style={{ backgroundColor: '#ffffff', color: '#0f172a' }}>2026년</option>
+                {Array.from(
+                  { length: Math.max(new Date().getFullYear() + 1, 2026) - 2024 + 1 },
+                  (_, i) => 2024 + i
+                ).map((y) => (
+                  <option key={y} value={String(y)} style={{ backgroundColor: '#ffffff', color: '#0f172a' }}>{y}년</option>
+                ))}
               </select>
               <select
                 value={syncMonth}
