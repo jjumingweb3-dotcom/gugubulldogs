@@ -247,40 +247,40 @@ export default function TournamentSummaryView({
 
   return (
     <div className="space-y-6 animate-fadeIn">
-      {/* Tournament Selection Header (Time & Month Grouped View) */}
-      <div className="bg-white border border-slate-200/80 rounded-3xl p-5 md:p-6 space-y-5 shadow-xs">
+      {/* Tournament Selection Header (Compact Month-Grouped List) */}
+      <div className="bg-white border border-slate-200/80 rounded-3xl p-5 md:p-6 space-y-4 shadow-xs">
         {/* Header Title & Quick Search */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-primary shrink-0">
-              <Trophy className="w-5 h-5" />
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-primary shrink-0">
+              <Trophy className="w-4.5 h-4.5" />
             </div>
             <div>
-              <h2 className="text-base md:text-lg font-extrabold text-slate-800 flex items-center gap-2">
+              <h2 className="text-base font-extrabold text-slate-800 flex items-center gap-2">
                 대회별 세부팀 결과 모아보기
               </h2>
               <p className="text-xs text-slate-500">
-                시간 월별순으로 정리된 대회 목록에서 원하는 대회를 선택해 세부팀별 경기 결과를 확인하세요.
+                원하시는 대회를 선택하시면 각 세부팀(새싹부, 꿈나무부, 유소년부 등)의 경기 결과를 확인하실 수 있습니다.
               </p>
             </div>
           </div>
 
           {/* Quick Search Input */}
-          <div className="relative w-full sm:w-64">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+          <div className="relative w-full sm:w-56">
+            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
             <input
               type="text"
-              placeholder="대회명 또는 월 검색..."
+              placeholder="대회명 검색..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 outline-none focus:border-primary focus:bg-white transition-all"
+              className="w-full pl-8 pr-7 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 outline-none focus:border-primary focus:bg-white transition-all"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
               >
-                <X className="w-3.5 h-3.5" />
+                <X className="w-3 h-3" />
               </button>
             )}
           </div>
@@ -302,7 +302,7 @@ export default function TournamentSummaryView({
             {/* 'All Months' button */}
             <button
               onClick={() => setSelectedMonth('all')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all duration-200 cursor-pointer ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all duration-150 cursor-pointer ${
                 selectedMonth === 'all'
                   ? 'bg-primary text-white border-primary shadow-xs'
                   : 'bg-slate-100/90 border-slate-200 text-slate-700 hover:bg-slate-200 hover:text-slate-900'
@@ -318,7 +318,7 @@ export default function TournamentSummaryView({
                 <button
                   key={grp.key}
                   onClick={() => setSelectedMonth(grp.key)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all duration-200 cursor-pointer flex items-center gap-1.5 ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all duration-150 cursor-pointer flex items-center gap-1 ${
                     isTabSelected
                       ? 'bg-primary text-white border-primary shadow-xs'
                       : 'bg-slate-100/90 border-slate-200 text-slate-700 hover:bg-slate-200 hover:text-slate-900'
@@ -336,107 +336,45 @@ export default function TournamentSummaryView({
           </div>
         </div>
 
-        {/* Month-Grouped Tournament Cards Grid */}
-        <div className="space-y-6 pt-2">
+        {/* Month Sections with Compact Chip List */}
+        <div className="space-y-4 pt-1">
           {displayedGroups.length > 0 ? (
             displayedGroups.map((grp) => (
-              <div key={grp.key} className="space-y-3">
-                {/* Month Section Header */}
-                <div className="flex items-center justify-between bg-slate-50/80 px-3.5 py-2 rounded-xl border border-slate-200/60">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-primary" />
-                    <h4 className="text-xs md:text-sm font-extrabold text-slate-800">
-                      {grp.label}
-                    </h4>
-                    <span className="text-[11px] text-slate-500 font-medium">
-                      ({grp.tournaments.length}개 대회)
-                    </span>
-                  </div>
-
-                  {grp.totalMatches > 0 && (
-                    <div className="text-[11px] font-semibold text-slate-500 flex items-center gap-2">
-                      <span>총 {grp.totalMatches}경기</span>
-                      <span className="text-blue-600 font-bold">{grp.totalWins}승</span>
-                      <span className="text-slate-600">{grp.totalLosses}패</span>
-                      {grp.totalDraws > 0 && <span className="text-slate-400">{grp.totalDraws}무</span>}
-                    </div>
-                  )}
+              <div key={grp.key} className="space-y-2">
+                {/* Month Label Header */}
+                <div className="flex items-center gap-1.5 text-xs font-bold text-slate-600">
+                  <Calendar className="w-3.5 h-3.5 text-primary" />
+                  <span>{grp.label}</span>
+                  <span className="text-[11px] text-slate-400 font-normal">
+                    ({grp.tournaments.length}개 대회)
+                  </span>
                 </div>
 
-                {/* Tournaments in this Month */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                {/* Compact Chips List */}
+                <div className="flex flex-wrap gap-2">
                   {grp.tournaments.map((t) => {
                     const isSelected = activeTournament === t.name;
                     return (
-                      <div
+                      <button
                         key={t.name}
                         onClick={() => onSelectTournament(t.name)}
-                        className={`p-3.5 rounded-2xl border transition-all duration-200 cursor-pointer flex flex-col justify-between gap-2.5 text-left relative group ${
+                        className={`px-3.5 py-2 rounded-xl text-xs md:text-sm font-bold border transition-all duration-200 cursor-pointer ${
                           isSelected
-                            ? 'bg-blue-50/80 border-primary ring-2 ring-primary/20 shadow-xs'
-                            : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50/60 shadow-2xs'
+                            ? 'bg-primary text-white border-primary shadow-xs'
+                            : 'bg-slate-100/90 border-slate-200 text-slate-700 hover:bg-slate-200 hover:text-slate-900'
                         }`}
                       >
-                        {/* Top: Tournament Name & Selected Badge */}
-                        <div className="flex items-start justify-between gap-2">
-                          <h5 className={`text-xs md:text-sm font-bold tracking-tight line-clamp-2 transition-colors ${
-                            isSelected ? 'text-primary' : 'text-slate-800 group-hover:text-primary'
-                          }`}>
-                            {t.name}
-                          </h5>
-                          {isSelected && (
-                            <span className="shrink-0 flex items-center gap-0.5 px-2 py-0.5 rounded-lg bg-primary text-white text-[10px] font-bold shadow-2xs">
-                              <Check className="w-3 h-3" />
-                              <span>선택됨</span>
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Middle: Date Range */}
-                        <div className="flex items-center gap-1.5 text-[11px] text-slate-500 font-mono">
-                          <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                          <span className="truncate">{t.dateRangeLabel}</span>
-                        </div>
-
-                        {/* Bottom: Match Count & Record Badge */}
-                        <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-[11px]">
-                          <span className="font-semibold text-slate-600">
-                            {t.matchCount > 0 ? `${t.matchCount}경기` : '등록 경기 없음'}
-                          </span>
-
-                          {t.matchCount > 0 ? (
-                            <div className="flex items-center gap-1.5 font-bold">
-                              {t.wins > 0 && (
-                                <span className="px-1.5 py-0.5 rounded-md bg-blue-100/80 text-blue-700 text-[10px]">
-                                  {t.wins}승
-                                </span>
-                              )}
-                              {t.losses > 0 && (
-                                <span className="px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600 text-[10px]">
-                                  {t.losses}패
-                                </span>
-                              )}
-                              {t.draws > 0 && (
-                                <span className="px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-700 text-[10px]">
-                                  {t.draws}무
-                                </span>
-                              )}
-                            </div>
-                          ) : (
-                            <span className="text-[10px] text-slate-400">대기 중</span>
-                          )}
-                        </div>
-                      </div>
+                        {t.name} ({t.matchCount})
+                      </button>
                     );
                   })}
                 </div>
               </div>
             ))
           ) : (
-            <div className="py-10 text-center space-y-2 bg-slate-50 border border-slate-200 rounded-2xl p-4">
-              <ShieldAlert className="w-8 h-8 text-slate-400 mx-auto" />
-              <p className="text-sm text-slate-600 font-semibold">검색 조건에 맞는 대회가 없습니다.</p>
-              <p className="text-xs text-slate-400">검색어를 지우거나 다른 월을 선택해 보세요.</p>
+            <div className="py-6 text-center space-y-1 bg-slate-50 border border-slate-200 rounded-2xl p-4">
+              <ShieldAlert className="w-6 h-6 text-slate-400 mx-auto" />
+              <p className="text-xs text-slate-600 font-semibold">검색 조건에 맞는 대회가 없습니다.</p>
             </div>
           )}
         </div>
@@ -445,7 +383,7 @@ export default function TournamentSummaryView({
       {/* Active Tournament Container */}
       {activeTournament && (
         <div className="bg-white border border-slate-200/80 rounded-3xl p-5 md:p-6 shadow-xs space-y-6">
-          <div className="border-b border-slate-100 pb-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div className="border-b border-slate-100 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="space-y-1.5">
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 text-xs font-bold">
                 <Award className="w-3.5 h-3.5" />
@@ -457,16 +395,13 @@ export default function TournamentSummaryView({
             </div>
 
             {activeTournamentDetail && activeTournamentDetail.matchCount > 0 && (
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-2">
                 <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 border border-slate-200 text-xs font-mono text-slate-600">
                   <Calendar className="w-3.5 h-3.5 text-slate-400" />
                   <span>{activeTournamentDetail.dateRangeLabel}</span>
                 </div>
-                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 border border-blue-200 text-xs font-bold text-blue-700">
-                  <span>총 {activeTournamentDetail.matchCount}경기</span>
-                  <span>·</span>
-                  <span>{activeTournamentDetail.wins}승 {activeTournamentDetail.losses}패</span>
-                  {activeTournamentDetail.draws > 0 && <span> {activeTournamentDetail.draws}무</span>}
+                <div className="px-3 py-1.5 rounded-xl bg-blue-50 border border-blue-200 text-xs font-bold text-blue-700">
+                  총 {activeTournamentDetail.matchCount}경기
                 </div>
               </div>
             )}
