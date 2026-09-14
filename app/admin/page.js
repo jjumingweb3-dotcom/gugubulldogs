@@ -752,12 +752,12 @@ CREATE POLICY "Allow public read access to crawl_targets" ON crawl_targets FOR S
             
             <div className="space-y-1">
               <label className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">
-                {newTarget.platform === 'youtube' ? '채널 ID 또는 핸들 (예: @username)' : 'BJ ID (예: pik7688)'}
+                {newTarget.platform === 'youtube' ? '채널 URL, @핸들 또는 채널 ID' : 'BJ ID (예: pik7688)'}
               </label>
               <input
                 type="text"
                 required
-                placeholder={newTarget.platform === 'youtube' ? 'UC... 또는 @핸들' : 'soop 아이디'}
+                placeholder={newTarget.platform === 'youtube' ? '예: https://www.youtube.com/@... 또는 @핸들' : 'soop 아이디'}
                 value={newTarget.target_id}
                 onChange={(e) => setNewTarget(prev => ({ ...prev, target_id: e.target.value }))}
                 className="w-full px-3.5 py-2.5 bg-gray-955 border border-gray-750 rounded-xl text-xs md:text-sm text-gray-200 outline-none focus:border-primary/20"

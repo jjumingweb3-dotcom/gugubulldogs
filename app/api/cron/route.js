@@ -51,6 +51,7 @@ function parseYouTubeRss(xmlText, teamDivision, cutoffDate = CUTOFF_DATE) {
       
       const tournament = extractTournament(title);
       const opponent = extractOpponent(title);
+      const division = detectDivision(title, teamDivision);
       
       videos.push({
         source: 'youtube',
@@ -59,7 +60,7 @@ function parseYouTubeRss(xmlText, teamDivision, cutoffDate = CUTOFF_DATE) {
         thumbnail_url: thumbnailUrl,
         published_at: publishedAt.toISOString(),
         url: `https://www.youtube.com/watch?v=${sourceVideoId}`,
-        team_division: teamDivision,
+        team_division: division,
         tournament,
         opponent,
         parsed_status: 'success' // Classified by source channel!
@@ -125,25 +126,78 @@ function parseSoopVods(vodArray, bjId, teamDivision, cutoffDate = CUTOFF_DATE) {
   return videos;
 }
 
-// Dynamically resolve YouTube Handle to Channel ID
-// Dynamically resolve YouTube Handle to Channel ID
-async function resolveYtChannelId(handle) {
+// Clean and extract handle or channel ID from any YouTube input (URL, handle, or ID)
+function normalizeYoutubeTarget(input) {
+  if (!input) return '';
+  let str = input.trim();
+  
+  if (str.includes('youtube.com') || str.includes('youtu.be')) {
+    try {
+      const urlObj = new URL(str.startsWith('http') ? str : `https://${str}`);
+      const pathname = decodeURIComponent(urlObj.pathname);
+      const channelMatch = pathname.match(/channel\/(UC[A-Za-z0-9_-]{22})/);
+      if (channelMatch) return channelMatch[1];
+      const handleMatch = pathname.match(/@([^/?#]+)/);
+      if (handleMatch) return `@${handleMatch[1]}`;
+    } catch (e) {
+      console.error('Error parsing YouTube URL:', str, e);
+    }
+  }
+
+  if (/^UC[A-Za-z0-9_-]{22}$/.test(str)) {
+    return str;
+  }
+
+  if (str.startsWith('@')) {
+    return str;
+  }
+
+  return `@${str}`;
+}
+
+// Dynamically resolve YouTube Handle/URL/ID to Channel ID
+async function resolveYtChannelId(target) {
   try {
-    const formattedHandle = handle.startsWith('@') ? handle : `@${handle}`;
+    const normalized = normalizeYoutubeTarget(target);
+    if (/^UC[A-Za-z0-9_-]{22}$/.test(normalized)) {
+      return normalized;
+    }
+    
+    const formattedHandle = normalized.startsWith('@') ? normalized : `@${normalized}`;
     const url = `https://www.youtube.com/${encodeURIComponent(formattedHandle)}`;
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept-Language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7'
       }
     });
-    if (!response.ok) return null;
+    if (!response.ok) {
+      console.warn(`[resolveYtChannelId] Failed to fetch handle page for ${target}, status: ${response.status}`);
+      return null;
+    }
     const html = await response.text();
-    const match = html.match(/channel\/([A-Za-z0-9_-]{24})/) || html.match(/"browseId":"(UC[A-Za-z0-9_-]{22})"/);
+    const match = html.match(/channel\/(UC[A-Za-z0-9_-]{22})/) ||
+                  html.match(/"browseId":"(UC[A-Za-z0-9_-]{22})"/) ||
+                  html.match(/"externalId":"(UC[A-Za-z0-9_-]{22})"/) ||
+                  html.match(/feeds\/videos\.xml\?channel_id=(UC[A-Za-z0-9_-]{22})/);
     return match ? match[1] : null;
   } catch (e) {
-    console.error('Failed to resolve channel ID for', handle, e);
+    console.error('Failed to resolve channel ID for', target, e);
     return null;
   }
+}
+
+// Auto detect team division from title if present
+function detectDivision(title, defaultDivision) {
+  if (!title) return defaultDivision;
+  // Remove known channel name to prevent false positive on '유소년'
+  const cleanTitle = title.replace(/구구불독스유소년야구중계TV/gi, '');
+  if (cleanTitle.includes('꿈나무A') || cleanTitle.includes('꿈나무 A')) return '꿈나무A';
+  if (cleanTitle.includes('꿈나무B') || cleanTitle.includes('꿈나무 B')) return '꿈나무B';
+  if (cleanTitle.includes('새싹부') || cleanTitle.includes('새싹')) return '새싹부';
+  if (cleanTitle.includes('유소년부') || cleanTitle.includes('유소년')) return '유소년부';
+  if (cleanTitle.includes('꿈나무부') || cleanTitle.includes('꿈나무')) return '꿈나무부';
+  return defaultDivision || '미분류';
 }
 
 // Helper to parse relative date into Date object
@@ -165,11 +219,9 @@ function parseRelativeDate(text) {
   }
 }
 
-// Scrape YouTube channel videos page as fallback
-async function scrapeYoutubeHtml(channelId, teamDivision, cutoffDate = CUTOFF_DATE) {
-  const videos = [];
-  const url = `https://www.youtube.com/channel/${channelId}/videos`;
-  console.log(`[YouTube Scraper Fallback] Fetching videos page for channel ${channelId}:`, url);
+// Scrape YouTube tab (videos or streams)
+async function scrapeYoutubeTab(url, teamDivision, cutoffDate = CUTOFF_DATE, existingVideos = []) {
+  const videos = [...existingVideos];
   try {
     const response = await fetch(url, {
       headers: {
@@ -179,89 +231,85 @@ async function scrapeYoutubeHtml(channelId, teamDivision, cutoffDate = CUTOFF_DA
       next: { revalidate: 0 }
     });
     if (!response.ok) {
-      console.warn(`[YouTube Scraper Fallback] Page fetch failed with status: ${response.status}`);
-      return [];
+      console.warn(`[YouTube Scraper] Tab fetch failed (${url}) status: ${response.status}`);
+      return videos;
     }
     const html = await response.text();
-    
-    // Extract ytInitialData
     const dataRegex = /var ytInitialData = ({[\s\S]*?});<\/script>/;
     const match = html.match(dataRegex);
-    if (!match) {
-      console.warn('[YouTube Scraper Fallback] Could not find ytInitialData in HTML');
-      return [];
-    }
-    
+    if (!match) return videos;
+
     const jsonData = JSON.parse(match[1]);
     const tabs = jsonData.contents?.twoColumnBrowseResultsRenderer?.tabs;
-    if (!tabs) {
-      console.warn('[YouTube Scraper Fallback] No tabs structure in ytInitialData');
-      return [];
-    }
-    
+    if (!tabs) return videos;
+
     for (const tab of tabs) {
-      const title = tab.tabRenderer?.title;
-      const isVideoTab = title === '동영상' || title === 'Videos';
-      const isLiveTab = title === '라이브' || title === 'Live' || title === 'Streams';
-      
-      if (isVideoTab || isLiveTab) {
-        const contents = tab.tabRenderer?.content?.richGridRenderer?.contents;
-        if (!contents) continue;
-        
-        for (const item of contents) {
-          const richItem = item.richItemRenderer;
-          if (richItem) {
-            const lockup = richItem.content?.lockupViewModel;
-            if (lockup) {
-              const videoId = lockup.contentId;
-              const videoTitle = lockup.metadata?.lockupMetadataViewModel?.title?.content;
-              
-              let relativeTime = '';
-              const rows = lockup.metadata?.lockupMetadataViewModel?.metadata?.contentMetadataViewModel?.metadataRows;
-              if (rows && rows[0]?.metadataParts) {
-                const parts = rows[0].metadataParts;
-                if (parts.length > 1) {
-                  relativeTime = parts[1].text?.content || '';
-                } else if (parts[0]?.text?.content) {
-                  relativeTime = parts[0].text.content;
-                }
-              }
-              
-              if (videoId && videoTitle) {
-                const publishedAt = parseRelativeDate(relativeTime);
-                
-                // Apply cutoff date filter
-                if (publishedAt < cutoffDate) {
-                  continue;
-                }
-                
-                const thumbnail = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
-                const tournament = extractTournament(videoTitle);
-                const opponent = extractOpponent(videoTitle);
-                
-                if (!videos.some(v => v.source_video_id === videoId)) {
-                  videos.push({
-                    source: 'youtube',
-                    source_video_id: videoId,
-                    title: videoTitle.trim(),
-                    thumbnail_url: thumbnail,
-                    published_at: publishedAt.toISOString(),
-                    url: `https://www.youtube.com/watch?v=${videoId}`,
-                    team_division: teamDivision,
-                    tournament,
-                    opponent,
-                    parsed_status: 'success'
-                  });
+      const contents = tab.tabRenderer?.content?.richGridRenderer?.contents;
+      if (!contents) continue;
+
+      for (const item of contents) {
+        const richItem = item.richItemRenderer;
+        if (!richItem) continue;
+        const lockup = richItem.content?.lockupViewModel;
+        if (!lockup) continue;
+
+        const videoId = lockup.contentId;
+        const videoTitle = lockup.metadata?.lockupMetadataViewModel?.title?.content;
+
+        let relativeTime = '';
+        const rows = lockup.metadata?.lockupMetadataViewModel?.metadata?.contentMetadataViewModel?.metadataRows;
+        if (rows) {
+          for (const row of rows) {
+            if (row.metadataParts) {
+              for (const part of row.metadataParts) {
+                const text = part.text?.content || '';
+                if (text.includes('전') || text.includes('스트리밍') || text.includes('시청')) {
+                  relativeTime = text;
                 }
               }
             }
           }
         }
+
+        if (videoId && videoTitle) {
+          const publishedAt = parseRelativeDate(relativeTime);
+          if (publishedAt < cutoffDate) continue;
+
+          if (!videos.some(v => v.source_video_id === videoId)) {
+            const detectedDiv = detectDivision(videoTitle, teamDivision);
+            videos.push({
+              source: 'youtube',
+              source_video_id: videoId,
+              title: videoTitle.trim(),
+              thumbnail_url: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
+              published_at: publishedAt.toISOString(),
+              url: `https://www.youtube.com/watch?v=${videoId}`,
+              team_division: detectedDiv,
+              tournament: extractTournament(videoTitle),
+              opponent: extractOpponent(videoTitle),
+              parsed_status: 'success'
+            });
+          }
+        }
       }
     }
   } catch (err) {
-    console.error('[YouTube Scraper Fallback] Error occurred during HTML scraping:', err);
+    console.error(`[YouTube Scraper] Error scraping ${url}:`, err);
   }
+  return videos;
+}
+
+// Scrape YouTube channel (both streams and videos tabs)
+async function scrapeYoutubeHtml(channelId, teamDivision, cutoffDate = CUTOFF_DATE) {
+  let videos = [];
+  // 1. Scrape streams tab (실시간 경기 중계 다시보기가 위치하는 핵심 탭)
+  const streamsUrl = `https://www.youtube.com/channel/${channelId}/streams`;
+  videos = await scrapeYoutubeTab(streamsUrl, teamDivision, cutoffDate, videos);
+
+  // 2. Scrape videos tab (일반 업로드 영상)
+  const videosUrl = `https://www.youtube.com/channel/${channelId}/videos`;
+  videos = await scrapeYoutubeTab(videosUrl, teamDivision, cutoffDate, videos);
+
   return videos;
 }
 
@@ -303,17 +351,25 @@ export async function GET(request) {
     
     if (platform === 'youtube') {
       try {
-        let channelId = target_id;
-        // Resolve handle if starts with @
-        if (target_id.startsWith('@')) {
-          const resolved = await resolveYtChannelId(target_id);
-          if (resolved) {
-            channelId = resolved;
-          }
+        const channelId = await resolveYtChannelId(target_id);
+        if (!channelId) {
+          console.warn(`[YouTube Scraper] Could not resolve channel ID for target: ${target_id}`);
+          platformsStatus[statusKey] = 'failed';
+          continue;
         }
-        
-        let youtubeSuccess = false;
-        // Try RSS first
+
+        console.log(`[YouTube Scraper] Scraping channel ${channelId} for target ${target_id}`);
+        let targetVideos = [];
+
+        // 1. Scrape streams & videos tabs via HTML scraping (captures live match replays)
+        try {
+          const htmlVideos = await scrapeYoutubeHtml(channelId, team_division, cutoffDate);
+          targetVideos = [...targetVideos, ...htmlVideos];
+        } catch (htmlErr) {
+          console.error(`[YouTube Scraper] HTML scraping failed for ${channelId}:`, htmlErr);
+        }
+
+        // 2. Try RSS feed for latest uploaded videos
         try {
           const rssUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`;
           const response = await fetch(rssUrl, { 
@@ -325,26 +381,21 @@ export async function GET(request) {
           if (response.ok) {
             const xmlText = await response.text();
             const ytVideos = parseYouTubeRss(xmlText, team_division, cutoffDate);
-            if (ytVideos.length > 0) {
-              allScrapedVideos = [...allScrapedVideos, ...ytVideos];
-              youtubeSuccess = true;
+            for (const v of ytVideos) {
+              if (!targetVideos.some(tv => tv.source_video_id === v.source_video_id)) {
+                targetVideos.push(v);
+              }
             }
           }
         } catch (rssErr) {
-          console.error(`YouTube RSS failed for ${target_id}:`, rssErr);
+          console.error(`YouTube RSS failed for ${channelId}:`, rssErr);
         }
-        
-        // Fallback to HTML Scraping if RSS failed or returned 0 videos
-        if (!youtubeSuccess) {
-          console.log(`[YouTube RSS Fallback Alert] Falling back to HTML scraping for channel ${channelId}`);
-          const ytHtmlVideos = await scrapeYoutubeHtml(channelId, team_division, cutoffDate);
-          if (ytHtmlVideos.length > 0) {
-            allScrapedVideos = [...allScrapedVideos, ...ytHtmlVideos];
-            youtubeSuccess = true;
-          }
+
+        if (targetVideos.length > 0) {
+          allScrapedVideos = [...allScrapedVideos, ...targetVideos];
         }
-        
-        platformsStatus[statusKey] = youtubeSuccess ? 'success' : 'failed';
+
+        platformsStatus[statusKey] = 'success';
       } catch (e) {
         console.error(`Error scraping YouTube channel ${target_id}:`, e);
         platformsStatus[statusKey] = 'failed';
