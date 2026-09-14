@@ -267,11 +267,20 @@ async function scrapeYoutubeHtml(channelId, teamDivision, cutoffDate = CUTOFF_DA
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
+  const dateParam = searchParams.get('date') || searchParams.get('startDate');
   const yearParam = searchParams.get('year');
   const monthParam = searchParams.get('month');
 
   let cutoffDate = CUTOFF_DATE;
-  if (yearParam && monthParam) {
+  if (dateParam) {
+    const match = dateParam.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (match) {
+      const parsed = new Date(`${dateParam}T00:00:00+09:00`);
+      if (!isNaN(parsed.getTime())) {
+        cutoffDate = parsed;
+      }
+    }
+  } else if (yearParam && monthParam) {
     const y = parseInt(yearParam, 10);
     const m = parseInt(monthParam, 10);
     if (!isNaN(y) && !isNaN(m) && m >= 1 && m <= 12) {
@@ -279,6 +288,8 @@ export async function GET(request) {
       cutoffDate = new Date(`${y}-${monthStr}-01T00:00:00+09:00`);
     }
   }
+
+  console.log(`[Sync Cron] Cutoff Date: ${cutoffDate.toISOString()} (KST 기준: ${cutoffDate.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })})`);
 
   // Fetch crawl targets from DB
   const { targets } = await getCrawlTargets();
@@ -372,6 +383,7 @@ export async function GET(request) {
     message: `${addedCount}개의 새로운 경기 영상이 동기화되었습니다.`,
     addedCount,
     scrapedTotal: allScrapedVideos.length,
+    cutoffDate: cutoffDate.toISOString(),
     platforms: platformsStatus
   });
 }

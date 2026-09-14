@@ -28,13 +28,16 @@ export default function AdminPage() {
   const [showTournamentForm, setShowTournamentForm] = useState(false);
   const [diagnostics, setDiagnostics] = useState(null);
   const [isDiagnosing, setIsDiagnosing] = useState(false);
-  const [syncYear, setSyncYear] = useState(() => String(new Date().getFullYear()));
-  const [syncMonth, setSyncMonth] = useState(() => String(new Date().getMonth() + 1)); // Default to current month
- 
+  const [syncDate, setSyncDate] = useState(() => {
+    const now = new Date(Date.now() + 9 * 60 * 60 * 1000);
+    const y = now.getUTCFullYear();
+    const m = String(now.getUTCMonth() + 1).padStart(2, '0');
+    return `${y}-${m}-01`;
+  });
   // Manual video registration state
   const [showAddForm, setShowAddForm] = useState(false);
   const [newVideoBulldogsPos, setNewVideoBulldogsPos] = useState('away'); // 'away' or 'home'
-  const [newVideo, setNewVideo] = useState({
+  const [newVideo, setNewVideo] = useState(() => ({
     source: 'youtube',
     url: '',
     title: '',
@@ -47,7 +50,7 @@ export default function AdminPage() {
     home_score: '',
     away_score: '',
     win_team: ''
-  });
+  }));
 
   // Crawl targets management states
   const [crawlTargets, setCrawlTargets] = useState([]);
@@ -238,13 +241,17 @@ export default function AdminPage() {
   };;
 
   const handleSyncVideos = async () => {
+    if (!syncDate) {
+      setError('동기화 기준 일자를 선택해 주세요.');
+      return;
+    }
     setIsRefreshing(true);
     setMessage('');
     setError('');
     const savedPassword = localStorage.getItem('gugu_admin_pw');
     
     try {
-      const res = await fetch(`/api/cron?year=${syncYear}&month=${syncMonth}`);
+      const res = await fetch(`/api/cron?date=${encodeURIComponent(syncDate)}`);
       const data = await res.json();
       if (res.ok && data.success) {
         setMessage(data.message || '업데이트가 완료되었습니다.');
@@ -1208,29 +1215,27 @@ CREATE POLICY "Allow public read access to crawl_targets" ON crawl_targets FOR S
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2 bg-gray-900 border border-gray-700 rounded-xl px-2.5 py-1.5 text-xs text-gray-300">
-              <select
-                value={syncYear}
-                onChange={(e) => setSyncYear(e.target.value)}
-                className="bg-gray-950 border border-gray-700 text-gray-100 font-semibold outline-none cursor-pointer rounded-lg px-2 py-0.5 text-[11px] hover:bg-gray-800 transition-colors"
+            <div className="flex items-center gap-1.5 bg-gray-900 border border-gray-700 rounded-xl px-2.5 py-1.5 text-xs text-gray-300">
+              <input
+                type="date"
+                value={syncDate}
+                onChange={(e) => setSyncDate(e.target.value)}
+                style={{ colorScheme: 'light' }}
+                className="bg-gray-950 border border-gray-700 text-gray-100 font-semibold outline-none cursor-pointer rounded-lg px-2 py-0.5 text-[11px] hover:bg-gray-800 transition-colors min-w-[120px] sm:min-w-[128px]"
+                title="동기화 기준 일자 선택 (이 일자 이후 등록된 영상만 동기화)"
+              />
+              <span className="text-[10px] text-gray-400 font-medium whitespace-nowrap">이후</span>
+              <button
+                type="button"
+                onClick={() => {
+                  const now = new Date(Date.now() + 9 * 60 * 60 * 1000);
+                  setSyncDate(now.toISOString().substring(0, 10));
+                }}
+                className="hidden sm:inline-block px-1.5 py-0.5 rounded bg-gray-800 hover:bg-gray-700 text-[10px] text-gray-400 hover:text-gray-200 font-medium transition-colors cursor-pointer whitespace-nowrap"
+                title="오늘 일자로 설정"
               >
-                {Array.from(
-                  { length: Math.max(new Date().getFullYear() + 1, 2026) - 2024 + 1 },
-                  (_, i) => 2024 + i
-                ).map((y) => (
-                  <option key={y} value={String(y)} style={{ backgroundColor: '#ffffff', color: '#0f172a' }}>{y}년</option>
-                ))}
-              </select>
-              <select
-                value={syncMonth}
-                onChange={(e) => setSyncMonth(e.target.value)}
-                className="bg-gray-950 border border-gray-700 text-gray-100 font-semibold outline-none cursor-pointer rounded-lg px-2 py-0.5 text-[11px] hover:bg-gray-800 transition-colors"
-              >
-                {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-                  <option key={m} value={m} style={{ backgroundColor: '#ffffff', color: '#0f172a' }}>{m}월</option>
-                ))}
-              </select>
-              <span className="text-[10px] text-gray-400 font-medium hidden xs:inline">이후</span>
+                오늘
+              </button>
             </div>
             <button
               onClick={handleSyncVideos}
